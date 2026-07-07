@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>On-Trainer Pricing Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div style="min-height:100vh;width:100%;display:flex;align-items:center;justify-content:center;padding:36px 20px;background:radial-gradient(1200px 640px at 10% -8%, rgba(81, 222, 162, 0.2), transparent 58%) fixed, radial-gradient(1000px 620px at 102% -2%, rgba(81, 222, 162, 0.11), transparent 54%), linear-gradient(rgb(11, 16, 19) 0%, rgb(7, 10, 12) 100%)">
+
+  <!-- ===================== TRAINER DEVICE ===================== -->
+  <div style="position:relative;width:560px;max-width:100%;border-radius:40px;padding:18px;background:linear-gradient(155deg,#1b2024 0%,#0c1012 100%);box-shadow:0 50px 130px rgba(0,0,0,.65), inset 0 1px 0 rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.06)">
+
+    <!-- screen -->
+    <div style="position:relative;width:100%;height:948px;border-radius:26px;overflow:hidden;background:linear-gradient(180deg,#0c1215 0%,#080c0e 100%);border:1px solid rgba(255,255,255,.05);display:flex;flex-direction:column">
+
+      <!-- screen ambient glow -->
+      <div style="position:absolute;top:-120px;right:-80px;width:340px;height:340px;border-radius:50%;background:radial-gradient(circle, rgba(81,222,162,.16), transparent 68%);pointer-events:none;animation:glowPulse 6s ease-in-out infinite"></div>
+
+      <!-- ----- top chrome ----- -->
+      <div style="position:relative;display:flex;align-items:center;justify-content:space-between;padding:18px 22px 12px;flex:none">
+        <img src="assets/tonal-logo-white.png" alt="Tonal" style="height:15px;width:auto;opacity:.92">
+      </div>
+
+      <!-- ----- step rail ----- -->
+      <div style="position:relative;display:flex;align-items:center;gap:14px;padding:2px 24px 12px;flex:none">
+        <div data-action="goPrice" style="flex:1;display:flex;flex-direction:column;gap:7px;cursor:pointer">
+          <div id="stepPriceBar" style="height:3px;border-radius:3px;background:#51dea2"></div>
+          <span id="stepPriceColor" style="font-size:9px;font-weight:700;letter-spacing:.14em;color:#51dea2">PRICE</span>
+        </div>
+        <div data-action="goCompare" style="flex:1;display:flex;flex-direction:column;gap:7px;cursor:pointer">
+          <div id="stepCompareBar" style="height:3px;border-radius:3px;background:rgba(134,148,138,.22)"></div>
+          <span id="stepCompareColor" style="font-size:9px;font-weight:700;letter-spacing:.14em;color:#5d6a62">COMPARE</span>
+        </div>
+        <div data-action="goSend" style="flex:1;display:flex;flex-direction:column;gap:7px;cursor:pointer">
+          <div id="stepSendBar" style="height:3px;border-radius:3px;background:rgba(134,148,138,.22)"></div>
+          <span id="stepSendColor" style="font-size:9px;font-weight:700;letter-spacing:.14em;color:#5d6a62">SEND</span>
+        </div>
+      </div>
+
+      <!-- ===================== FLOW VIEWPORT ===================== -->
+      <div style="position:relative;flex:1;overflow:hidden">
+        <div id="track" style="display:flex;width:300%;height:100%;transition:transform .28s ease;transform:translateX(0%)">
+
+          <!-- ===================== PRICE SCREEN ===================== -->
+          <section class="noscroll" style="width:33.3333%;height:100%;overflow-y:auto;padding:16px 26px 26px;display:flex;flex-direction:column">
+
+            <!-- eyebrow + trainer switch -->
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+              <span style="font-size:10px;font-weight:600;letter-spacing:.18em;color:#51dea2;text-transform:uppercase">Your all-in price</span>
+              <button data-action="switchTrainer" style="margin-top:16px;width:auto;white-space:nowrap;height:32px;padding:0 14px;border-radius:999px;border:1px solid rgba(134,148,138,.24);background:rgba(255,255,255,.02);color:#dfe3e7;font-weight:700;font-size:14px;letter-spacing:.03em;display:flex;align-items:center;justify-content:center;gap:9px">
+                <span style="font-size:15px">⇆</span> <span id="switchLabel">Switch to Tonal 1</span>
+              </button>
+            </div>
+
+            <!-- hero all-in sticker -->
+            <div style="margin-top:12px;display:flex;align-items:flex-end;gap:10px">
+              <span id="allInHero" style="font-family:'Big Shoulders Display',sans-serif;font-weight:900;font-size:82px;line-height:.82;letter-spacing:-.01em;color:#f3fbff;height:75px">$0</span>
+              <span style="font-family:'Big Shoulders Display',sans-serif;font-weight:700;font-size:16px;line-height:1;color:#86948a;padding-bottom:12px;letter-spacing:.1em;text-transform:uppercase">all-in</span>
+            </div>
+
+            <!-- accessory bundle -->
+            <div style="margin-top:22px;display:flex;align-items:center;justify-content:space-between">
+              <span style="font-size:10px;font-weight:700;letter-spacing:.14em;color:#86948a;text-transform:uppercase">Accessories bundle</span>
+              <span style="font-size:9.5px;font-weight:700;letter-spacing:.1em;color:#71fbbd;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:rgba(81,222,162,.1);border:1px solid rgba(81,222,162,.3)">Optional</span>
+            </div>
+            <div id="bundleList" style="margin-top:11px;display:flex;flex-direction:column;gap:10px"></div>
+
+            <!-- shipping & installation (rep) -->
+            <span style="display:block;margin-top:22px;font-size:10px;font-weight:700;letter-spacing:.14em;color:#86948a;text-transform:uppercase">Shipping &amp; installation</span>
+            <div id="shippingList" style="margin-top:11px;display:flex;gap:10px"></div>
+
+            <!-- sales tax (rep) -->
+            <div style="margin-top:22px;padding:16px 18px;border-radius:16px;background:rgba(23,28,31,.6);border:1px solid rgba(134,148,138,.16)">
+              <div style="display:flex;align-items:center;justify-content:space-between">
+                <span style="font-size:10px;font-weight:700;letter-spacing:.14em;color:#86948a;text-transform:uppercase">SALES TAX</span>
+                <span style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:26px;color:#51dea2;line-height:1"><span id="taxPctLabel">7</span>%</span>
+              </div>
+              <input id="taxRange" type="range" min="0" max="20" step="0.25" value="7" style="width:100%;margin-top:14px;height:6px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">
+                <span style="font-size:10px;color:#5d6a62">0%</span>
+                <span style="font-size:10px;color:#5d6a62">20%</span>
+              </div>
+            </div>
+
+            <!-- summary -->
+            <div style="margin-top:16px;padding:4px 18px;border-radius:16px;background:rgba(23,28,31,.6);border:1px solid rgba(134,148,138,.16)">
+              <div id="summaryListPrice"></div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:15px 0">
+                <span style="font-size:11px;font-weight:700;letter-spacing:.12em;color:#86948a;text-transform:uppercase">All-in total</span>
+                <span id="allInTotalPrice" style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:28px;color:#51dea2">$0</span>
+              </div>
+            </div>
+
+            <!-- tonal 1 vs 2 comparison -->
+            <div id="tonal1Compare" style="margin-top:16px;padding:16px 18px;border-radius:16px;background:rgba(23,28,31,.6);border:1px solid rgba(134,148,138,.16);display:none">
+              <span style="display:block;font-size:10px;font-weight:700;letter-spacing:.14em;color:#86948a;text-transform:uppercase">Tonal 1 · what you get</span>
+              <p style="margin:8px 0 0;font-size:11.5px;color:#bbcabf;line-height:1.5">Up to <span style="color:#f1f5f3;font-weight:600">200 lb</span> digital resistance in 1 lb increments · 24″ HD display · thousands of strength, cardio &amp; yoga workouts with real-time form feedback.</p>
+              <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(134,148,138,.14)">
+                <span style="display:block;font-size:10px;font-weight:700;letter-spacing:.14em;color:#51dea2;text-transform:uppercase">Step up to Tonal 2</span>
+                <div style="margin-top:11px;display:flex;flex-direction:column;gap:10px">
+                  <div style="display:flex;gap:10px;align-items:flex-start">
+                    <span style="width:6px;height:6px;border-radius:50%;background:#51dea2;flex:none;margin-top:5px;box-shadow:0 0 8px #51dea2"></span>
+                    <span style="font-size:11.5px;color:#bbcabf;line-height:1.45"><span style="color:#f1f5f3;font-weight:600">Up to 250 lb</span> resistance — 50 lb more headroom for heavy lifts, plus more precise adaptive weight.</span>
+                  </div>
+                  <div style="display:flex;gap:10px;align-items:flex-start">
+                    <span style="width:6px;height:6px;border-radius:50%;background:#51dea2;flex:none;margin-top:5px;box-shadow:0 0 8px #51dea2"></span>
+                    <span style="font-size:11.5px;color:#bbcabf;line-height:1.45"><span style="color:#f1f5f3;font-weight:600">Built-in Smart View</span> — the on-Tonal camera gives live form feedback.</span>
+                  </div>
+                  <div style="display:flex;gap:10px;align-items:flex-start">
+                    <span style="width:6px;height:6px;border-radius:50%;background:#51dea2;flex:none;margin-top:5px;box-shadow:0 0 8px #51dea2"></span>
+                    <span style="font-size:11.5px;color:#bbcabf;line-height:1.45"><span style="color:#f1f5f3;font-weight:600">Aero HIIT</span> — cardio + strength in one session, Tonal 2 only.</span>
+                  </div>
+                  <div style="display:flex;gap:10px;align-items:flex-start">
+                    <span style="width:6px;height:6px;border-radius:50%;background:#51dea2;flex:none;margin-top:5px;box-shadow:0 0 8px #51dea2"></span>
+                    <span style="font-size:11.5px;color:#bbcabf;line-height:1.45"><span style="color:#f1f5f3;font-weight:600">Smart Drop Sets</span> — auto-reduces weight as you fatigue to push past plateaus.</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- compare CTA -->
+            <div style="margin-top:16px;display:flex;align-items:flex-start;gap:10px;padding:13px 15px;border-radius:14px;background:linear-gradient(150deg,rgba(81,222,162,.07),rgba(23,28,31,.5));border:1px solid rgba(81,222,162,.16);height:10px">
+              <span style="width:7px;height:7px;border-radius:50%;background:#51dea2;flex:none;margin-top:4px;box-shadow:0 0 8px #51dea2;align-self:center"></span><span style="font-size:12px;color:#bbcabf;line-height:1.5;flex-grow:0;align-self:center">Prefer to pay monthly? <span style="color:#f1f5f3;font-weight:600">Ask your rep about 0% APR financing.</span></span>
+            </div>
+            <button data-action="goCompare" style="margin-top:16px;width:467px;max-width:100%;border-radius:999px;border:none;background:#51dea2;color:#051512;font-weight:700;letter-spacing:.03em;display:flex;align-items:center;justify-content:center;gap:10px;flex-grow:0;flex-shrink:0;font-size:18px;align-self:center;height:50px;position:static">Compare Cost <span style="font-size:17px">→</span></button>
+
+          </section>
+
+          <!-- ===================== COMPARE SCREEN ===================== -->
+          <section class="noscroll" style="width:33.3333%;height:100%;overflow-y:auto;padding:16px 24px 24px;display:flex;flex-direction:column">
+
+            <!-- tab toggle -->
+            <div style="display:flex;border-radius:14px;border:1px solid rgba(134,148,138,.2);overflow:hidden;background:rgba(0,0,0,.2);flex:none">
+              <button data-action="setMembershipTab" id="memTabBtn" style="flex:1;height:46px;border:none;background:#51dea2;color:#051512;font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase">Membership</button>
+              <button data-action="setHomeGymTab" id="hgTabBtn" style="flex:1;height:46px;border:none;background:transparent;color:#86948a;font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase">Home Gym</button>
+            </div>
+
+            <!-- TAB: MEMBERSHIP -->
+            <div id="membershipTab" style="display:flex;flex-direction:column;flex:1">
+              <span style="font-size:10px;font-weight:600;letter-spacing:.18em;color:#51dea2;text-transform:uppercase;display:block;margin-top:16px">Monthly membership · whole household</span>
+              <h2 style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:27px;line-height:1.04;color:#f1f5f3;margin:8px 0 0">One flat price.<br>Everyone trains.</h2>
+              <p style="font-size:11.5px;color:#86948a;margin:7px 0 0;line-height:1.45"><span id="membershipLabel">$59.95</span>/mo covers the whole household — the trainer is purchased separately.</p>
+
+              <!-- household toggle -->
+              <div style="margin-top:16px;padding:12px 14px;border-radius:16px;background:rgba(23,28,31,.6);border:1px solid rgba(134,148,138,.16)">
+                <div style="display:flex;align-items:center;justify-content:space-between">
+                  <span style="font-size:10px;font-weight:700;letter-spacing:.14em;color:#86948a;text-transform:uppercase">Who works out</span>
+                  <span id="householdLabel" style="font-size:12px;font-weight:600;color:#51dea2">Just me</span>
+                </div>
+                <div id="householdList" style="margin-top:10px;display:flex;gap:6px"></div>
+              </div>
+
+              <!-- bars -->
+              <div id="compareColumns" style="margin-top:18px;flex:1;display:flex;gap:10px;align-items:flex-end;min-height:210px"></div>
+
+              <!-- callout -->
+              <div id="memSavesCallout" style="margin-top:14px;padding:13px 15px;border-radius:16px;display:flex;align-items:center;gap:12px">
+                <span id="memSavesLabel" style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:26px;line-height:1;white-space:nowrap">$0</span>
+                <span id="memSavesCopy" style="font-size:12px;color:#bbcabf;line-height:1.4"></span>
+              </div>
+
+              <!-- what membership includes -->
+              <div style="margin-top:12px">
+                <span style="display:block;font-size:9.5px;font-weight:700;letter-spacing:.14em;color:#86948a;text-transform:uppercase">Every membership includes</span>
+                <div style="margin-top:9px;display:flex;flex-wrap:wrap;gap:7px">
+                  <span style="padding:6px 11px;border-radius:999px;border:1px solid rgba(81,222,162,.3);background:rgba(81,222,162,.07);color:#71fbbd;font-size:10.5px;font-weight:600">Custom programs</span>
+                  <span style="padding:6px 11px;border-radius:999px;border:1px solid rgba(81,222,162,.3);background:rgba(81,222,162,.07);color:#71fbbd;font-size:10.5px;font-weight:600">Weight calibration</span>
+                  <span style="padding:6px 11px;border-radius:999px;border:1px solid rgba(81,222,162,.3);background:rgba(81,222,162,.07);color:#71fbbd;font-size:10.5px;font-weight:600">Spotter Mode</span>
+                  <span style="padding:6px 11px;border-radius:999px;border:1px solid rgba(81,222,162,.3);background:rgba(81,222,162,.07);color:#71fbbd;font-size:10.5px;font-weight:600">AI coaching tools</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- TAB: HOME GYM -->
+            <div id="homeGymTab" style="display:none;flex-direction:column;flex:1">
+              <span style="font-size:10px;font-weight:600;letter-spacing:.18em;color:#51dea2;text-transform:uppercase;display:block;margin-top:16px">One-time purchase · sticker price</span>
+              <h2 style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:27px;line-height:1.04;color:#f1f5f3;margin:8px 0 0">The math on<br>the sticker.</h2>
+              <p style="font-size:11.5px;color:#86948a;margin:7px 0 0;line-height:1.45">Tonal all-in vs a comparable cable tower + rack + dumbbell setup.</p>
+
+              <div id="homeGymBars" style="margin-top:18px;flex:1;display:flex;gap:16px;align-items:flex-end;min-height:250px"></div>
+
+              <div style="margin-top:16px;padding:14px 16px;border-radius:16px;background:linear-gradient(150deg,rgba(81,222,162,.12),rgba(23,28,31,.4));border:1px solid rgba(81,222,162,.26)">
+                <span style="display:block;font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:20px;color:#51dea2;line-height:1">All-in-one. No hassle.</span>
+                <span style="display:block;font-size:12px;color:#bbcabf;line-height:1.45;margin-top:6px">One machine does the work of a full rack, cables, dumbbells &amp; bench — nothing to assemble, no clutter, and it's genuinely easy to use.</span>
+              </div>
+
+              <div style="margin-top:10px;padding:12px 14px;border-radius:14px;background:rgba(23,28,31,.6);border:1px solid rgba(134,148,138,.16);display:flex;align-items:flex-start;gap:10px">
+                <span style="width:7px;height:7px;border-radius:50%;background:#51dea2;flex:none;margin-top:4px;box-shadow:0 0 8px #51dea2"></span>
+                <span style="font-size:11.5px;color:#bbcabf;line-height:1.5">Get the expertise of a personal trainer and a full gym in your home for a fraction of the price!</span>
+              </div>
+            </div>
+
+            <!-- nav -->
+            <div style="display:flex;gap:12px;margin-top:16px;flex:none">
+              <button data-action="goPrice" style="flex:none;width:52px;height:56px;border-radius:999px;border:1px solid rgba(134,148,138,.24);background:transparent;color:#bbcabf;font-size:20px">←</button>
+              <button data-action="goSend" style="flex:1;height:56px;border-radius:999px;border:none;background:#51dea2;color:#051512;font-weight:700;font-size:14px;letter-spacing:.03em;display:flex;align-items:center;justify-content:center;gap:9px">Email me this quote <span style="font-size:16px">→</span></button>
+            </div>
+
+          </section>
+
+          <!-- ===================== SEND SCREEN ===================== -->
+          <section class="noscroll" style="width:33.3333%;height:100%;overflow-y:auto;padding:20px 26px 24px;display:flex;flex-direction:column">
+
+            <!-- NOT SENT -->
+            <div id="notSentPanel" style="display:flex;flex-direction:column;height:100%">
+              <span style="font-size:10px;font-weight:600;letter-spacing:.18em;color:#51dea2;text-transform:uppercase">Take it home</span>
+              <h2 style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:30px;line-height:1.03;color:#f1f5f3;margin:9px 0 0">Want your quote<br>emailed?</h2>
+              <p style="font-size:12.5px;color:#86948a;line-height:1.5;margin:9px 0 0">Your full quote — model, what's included, and the all-in delivered price — straight to your inbox.</p>
+
+              <!-- tonal image -->
+              <img src="assets/tonal-space.png" alt="Tonal wall-mounted footprint" style="margin-top:16px;width:100%;border-radius:14px;border:1px solid rgba(134,148,138,.2);display:block">
+              <span style="display:block;margin-top:8px;font-size:10.5px;color:#5d6a62;line-height:1.4">Wall-mounted footprint — about 7 ft × 7 ft of clear training space.</span>
+
+              <!-- recap -->
+              <div style="margin-top:16px;padding:4px 18px;border-radius:16px;background:rgba(23,28,31,.7);border:1px solid rgba(134,148,138,.16)">
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid rgba(134,148,138,.14)">
+                  <span style="font-size:11px;font-weight:700;letter-spacing:.12em;color:#86948a;text-transform:uppercase">Your <span id="recapTrainerName">Tonal 2</span> quote</span>
+                  <span id="recapAllIn" style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:22px;color:#51dea2">$0</span>
+                </div>
+                <div id="summaryListSend"></div>
+              </div>
+
+              <!-- email -->
+              <div id="emailWrap" style="margin-top:18px;display:flex;align-items:center;gap:10px;padding:6px 6px 6px 18px;border-radius:999px;background:rgba(255,255,255,.03);border:1px solid rgba(134,148,138,.2)">
+                <input id="emailInput" placeholder="name@email.com" inputmode="email" style="flex:1;min-width:0;background:transparent;border:none;color:#f1f5f3;font-size:15px">
+                <button id="sendBtn" data-action="sendQuote" disabled style="flex:none;height:48px;padding:0 24px;border-radius:999px;border:none;background:#2b3a33;color:#051512;font-weight:700;font-size:14px;letter-spacing:.03em;opacity:.5">Send</button>
+              </div>
+
+              <button data-action="goCompare" style="margin-top:auto;align-self:flex-start;padding:12px 0;background:transparent;border:none;color:#86948a;font-size:12.5px;font-weight:600;letter-spacing:.04em">← Back to comparison</button>
+            </div>
+
+            <!-- SENT -->
+            <div id="sentPanel" style="display:none;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center">
+              <div style="width:84px;height:84px;border-radius:50%;background:linear-gradient(150deg,rgba(81,222,162,.22),rgba(81,222,162,.06));border:1px solid rgba(81,222,162,.4);display:flex;align-items:center;justify-content:center;box-shadow:0 0 40px rgba(81,222,162,.25)">
+                <span style="font-size:40px;color:#51dea2;line-height:1">✓</span>
+              </div>
+              <h2 style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:32px;color:#f1f5f3;margin:22px 0 0">Quote sent.</h2>
+              <p style="font-size:14px;color:#bbcabf;line-height:1.55;margin:12px 0 0;max-width:32ch">Your <span id="sentTrainerName">Tonal 2</span> quote is on its way to <span id="sentEmail" style="color:#dfe3e7;font-weight:600"></span>.</p>
+              <button data-action="restart" style="margin-top:28px;height:52px;padding:0 30px;border-radius:999px;border:1px solid rgba(134,148,138,.24);background:transparent;color:#bbcabf;font-weight:600;font-size:14px;letter-spacing:.04em">Start a new quote</button>
+            </div>
+
+          </section>
+
+        </div>
+      </div>
+
+    </div>
+    <!-- bezel chevron -->
+    <div style="display:flex;align-items:center;justify-content:center;padding:11px 0 3px;height:20px">
+      <svg width="20" height="13" viewBox="0 0 20 13" fill="none"><path d="M2 11L10 3l8 8" stroke="rgba(255,255,255,.18)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
