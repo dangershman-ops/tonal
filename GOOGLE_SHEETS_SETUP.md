@@ -52,6 +52,7 @@ side; it updates live.
 - The request uses `mode: 'no-cors'`, so the browser can't read the response
   (Apps Script doesn't return CORS headers) — the app fires the request and
   moves on regardless of whether it succeeds. If rows aren't showing up,
+  
   double check the deployment access is set to "Anyone" and the URL ends in
   `/exec` (not `/dev`).
 - Anyone with the deployed URL can technically append rows to your sheet
