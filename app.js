@@ -47,6 +47,7 @@
     bundle: 'essential',
     shipping: 'standard',
     taxPct: 7,
+    discountPct: 0,
     household: 1,
     compareTab: 'membership',
     email: '',
@@ -79,7 +80,10 @@
     const shippingCost = shipObj.price;
 
     // ---- totals ----
-    const subtotal = trainerPrice + bundlePrice + shippingCost;
+    const preDiscountSubtotal = trainerPrice + bundlePrice + shippingCost;
+    const discountPct = s.discountPct;
+    const discountAmount = preDiscountSubtotal * (discountPct / 100);
+    const subtotal = preDiscountSubtotal - discountAmount;
     const taxPct = s.taxPct;
     const taxAmount = subtotal * (taxPct / 100);
     const allIn = subtotal + taxAmount;
@@ -89,8 +93,11 @@
       { label: trainerName + ' trainer', value: fmt(trainerPrice) },
       { label: bundleObj.name, value: fmt(bundlePrice) },
       { label: shipObj.label + ' shipping & install', value: fmt(shippingCost) },
-      { label: 'Sales tax (' + taxPctLabel + '%)', value: fmt(taxAmount) },
     ];
+    if (discountPct > 0) {
+      summary.push({ label: 'Discount (' + discountPct + '%)', value: '-' + fmt(discountAmount) });
+    }
+    summary.push({ label: 'Sales tax (' + taxPctLabel + '%)', value: fmt(taxAmount) });
 
     // ---- compare: membership economics ----
     const membership = CONFIG.membershipPrice;
@@ -133,6 +140,7 @@
       summary,
       taxPct,
       taxPctLabel,
+      discountPct,
       switchLabel: isTonal2 ? 'Switch to Tonal 1' : 'Switch to Tonal 2',
 
       household,
@@ -254,6 +262,8 @@
     renderShippingList();
     el('taxPctLabel').textContent = vals.taxPctLabel;
     if (document.activeElement !== el('taxRange')) el('taxRange').value = vals.taxPct;
+    el('discountPctLabel').textContent = vals.discountPct;
+    if (document.activeElement !== el('discountRange')) el('discountRange').value = vals.discountPct;
     renderSummaryRows('summaryListPrice', vals.summary);
     el('allInTotalPrice').textContent = vals.allInLabel;
     el('tonal1Compare').style.display = vals.isTonal1 ? 'block' : 'none';
@@ -302,10 +312,11 @@
   }
 
   function updateTaxDependent() {
-    // lightweight patch used while dragging the tax slider so the range
-    // input node is never replaced (would break the in-progress drag)
+    // lightweight patch used while dragging the tax/discount sliders so the
+    // range input nodes are never replaced (would break the in-progress drag)
     const vals = computeVals();
     el('taxPctLabel').textContent = vals.taxPctLabel;
+    el('discountPctLabel').textContent = vals.discountPct;
     el('allInHero').textContent = vals.allInLabel;
     el('allInTotalPrice').textContent = vals.allInLabel;
     renderSummaryRows('summaryListPrice', vals.summary);
@@ -344,6 +355,11 @@
 
   el('taxRange').addEventListener('input', (e) => {
     state.taxPct = parseFloat(e.target.value);
+    updateTaxDependent();
+  });
+
+  el('discountRange').addEventListener('input', (e) => {
+    state.discountPct = parseFloat(e.target.value);
     updateTaxDependent();
   });
 
