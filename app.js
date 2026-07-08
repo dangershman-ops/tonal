@@ -80,10 +80,9 @@
     const shippingCost = shipObj.price;
 
     // ---- totals ----
-    const preDiscountSubtotal = trainerPrice + bundlePrice + shippingCost;
     const discountPct = s.discountPct;
-    const discountAmount = preDiscountSubtotal * (discountPct / 100);
-    const subtotal = preDiscountSubtotal - discountAmount;
+    const discountAmount = trainerPrice * (discountPct / 100);
+    const subtotal = (trainerPrice - discountAmount) + bundlePrice + shippingCost;
     const taxPct = s.taxPct;
     const taxAmount = subtotal * (taxPct / 100);
     const allIn = subtotal + taxAmount;
@@ -91,13 +90,15 @@
 
     const summary = [
       { label: trainerName + ' trainer', value: fmt(trainerPrice) },
-      { label: bundleObj.name, value: fmt(bundlePrice) },
-      { label: shipObj.label + ' shipping & install', value: fmt(shippingCost) },
     ];
     if (discountPct > 0) {
-      summary.push({ label: 'Discount (' + discountPct + '%)', value: '-' + fmt(discountAmount) });
+      summary.push({ label: 'Trainer discount (' + discountPct + '%)', value: '-' + fmt(discountAmount) });
     }
-    summary.push({ label: 'Sales tax (' + taxPctLabel + '%)', value: fmt(taxAmount) });
+    summary.push(
+      { label: bundleObj.name, value: fmt(bundlePrice) },
+      { label: shipObj.label + ' shipping & install', value: fmt(shippingCost) },
+      { label: 'Sales tax (' + taxPctLabel + '%)', value: fmt(taxAmount) }
+    );
 
     // ---- compare: membership economics ----
     const membership = CONFIG.membershipPrice;
