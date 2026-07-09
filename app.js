@@ -88,17 +88,17 @@
     const shipObj = SHIP.find((x) => x.key === s.shipping) || SHIP[0];
     const shippingCost = shipObj.price;
 
-    // ---- extended warranty (optional) ----
+    // ---- extended warranty (optional, Tonal 2 only) ----
     const warrantyObj = WARRANTY.find((w) => w.key === s.warranty) || WARRANTY[0];
-    const warrantyPrice = warrantyObj.price;
+    const warrantyPrice = isTonal2 ? warrantyObj.price : 0;
 
     // ---- totals ----
     const discountMode = s.discountMode;
     const discountPct = s.discountPct;
     const discountDollar = s.discountDollar;
-    const discountAmount = discountMode === 'dollar'
+    const discountAmount = !isTonal2 ? 0 : (discountMode === 'dollar'
       ? Math.min(discountDollar, trainerPrice)
-      : trainerPrice * (discountPct / 100);
+      : trainerPrice * (discountPct / 100));
     const subtotal = (trainerPrice - discountAmount) + bundlePrice + shippingCost + warrantyPrice;
     const taxPct = s.taxPct;
     const taxAmount = subtotal * (taxPct / 100);
@@ -115,9 +115,11 @@
     summary.push(
       { label: bundleObj.name, value: fmt(bundlePrice) },
       { label: shipObj.label + ' shipping & install', value: fmt(shippingCost) },
-      { label: warrantyObj.name, value: fmt(warrantyPrice) },
-      { label: 'Sales tax (' + taxPctLabel + '%)', value: fmt(taxAmount) }
     );
+    if (isTonal2) {
+      summary.push({ label: warrantyObj.name, value: fmt(warrantyPrice) });
+    }
+    summary.push({ label: 'Sales tax (' + taxPctLabel + '%)', value: fmt(taxAmount) });
 
     // ---- compare: membership economics ----
     const membership = CONFIG.membershipPrice;
@@ -314,6 +316,8 @@
     renderBundleList(vals);
     renderShippingList();
     renderWarrantyList();
+    el('warrantySection').style.display = vals.isTonal2 ? 'block' : 'none';
+    el('discountBlock').style.display = vals.isTonal2 ? 'block' : 'none';
     if (document.activeElement !== el('taxPctInput')) el('taxPctInput').value = vals.taxPctLabel;
     syncDiscountModeUI(vals);
     const discountDisplayValue = vals.discountMode === 'dollar' ? vals.discountDollar : vals.discountPct;
