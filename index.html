@@ -70,7 +70,7 @@
             <div id="buyFlow">
 
             <!-- hero all-in sticker -->
-            <div style="margin-top:12px;display:flex;align-items:flex-end;gap:10px">
+            <div style="margin-top:26px;display:flex;align-items:flex-end;gap:10px">
               <span id="allInHero" style="font-family:'Big Shoulders Display',sans-serif;font-weight:900;font-size:82px;line-height:.82;letter-spacing:-.01em;color:#f3fbff;height:75px">$0</span>
               <span style="font-family:'Big Shoulders Display',sans-serif;font-weight:700;font-size:16px;line-height:1;color:#86948a;padding-bottom:12px;letter-spacing:.1em;text-transform:uppercase">all-in</span>
             </div>
@@ -86,14 +86,23 @@
             <span style="display:block;margin-top:22px;font-size:10px;font-weight:700;letter-spacing:.14em;color:#86948a;text-transform:uppercase">Shipping &amp; installation</span>
             <div id="shippingList" style="margin-top:11px;display:flex;gap:10px"></div>
 
-            <!-- extended warranty (collapsible) -->
-            <div id="warrantySection" style="margin-top:22px;padding:16px 18px;border-radius:16px;background:rgba(23,28,31,.6);border:1px solid rgba(134,148,138,.16)">
+            <!-- extended warranty — Tonal 2: always shown -->
+            <div id="warrantySectionAlways">
+              <div style="margin-top:22px;display:flex;align-items:center;justify-content:space-between">
+                <span style="font-size:10px;font-weight:700;letter-spacing:.14em;color:#86948a;text-transform:uppercase">Extended warranty</span>
+                <span style="font-size:9.5px;font-weight:700;letter-spacing:.1em;color:#71fbbd;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:rgba(81,222,162,.1);border:1px solid rgba(81,222,162,.3)">Optional</span>
+              </div>
+              <div id="warrantyListAlways" style="margin-top:11px;display:flex;flex-direction:column;gap:10px"></div>
+            </div>
+
+            <!-- extended warranty — Tonal 1: collapsible -->
+            <div id="warrantySectionToggle" style="margin-top:22px;padding:16px 18px;border-radius:16px;background:rgba(23,28,31,.6);border:1px solid rgba(134,148,138,.16)">
               <button data-action="toggleWarrantyOpen" style="all:unset;cursor:pointer;display:flex;align-items:center;justify-content:space-between;width:100%">
                 <span style="font-size:10px;font-weight:700;letter-spacing:.14em;color:#86948a;text-transform:uppercase"><span id="warrantyToggleIcon">+</span> Extended warranty</span>
                 <span id="warrantyCollapsedValue" style="font-family:'Big Shoulders Display',sans-serif;font-weight:700;font-size:15px;color:#51dea2"></span>
               </button>
               <div id="warrantyControls" style="display:none;margin-top:11px">
-                <div id="warrantyList" style="display:flex;flex-direction:column;gap:10px"></div>
+                <div id="warrantyListToggle" style="display:flex;flex-direction:column;gap:10px"></div>
               </div>
             </div>
 
@@ -183,7 +192,7 @@
 
             <!-- ============ RENT FLOW ============ -->
             <div id="rentFlow" style="display:none;flex-direction:column">
-              <div style="margin-top:18px;padding:22px 20px;border-radius:18px;background:rgba(23,28,31,.6);border:1px solid rgba(134,148,138,.16)">
+              <div style="margin-top:26px;padding:22px 20px;border-radius:18px;background:rgba(23,28,31,.6);border:1px solid rgba(134,148,138,.16)">
                 <span style="font-size:10px;font-weight:700;letter-spacing:.14em;color:#86948a;text-transform:uppercase">Rent <span id="rentTrainerName">Tonal 2</span></span>
                 <div style="margin-top:12px;display:flex;align-items:baseline;gap:8px">
                   <span id="rentPromoPrice" style="font-family:'Big Shoulders Display',sans-serif;font-weight:900;font-size:56px;line-height:1;color:#51dea2">$219</span>
@@ -191,8 +200,32 @@
                 </div>
                 <p style="margin:14px 0 0;font-size:12.5px;color:#bbcabf;line-height:1.5">Regular monthly rate: <span id="rentRegularPrice" style="color:#dfe3e7;font-weight:600">$279</span>/mo. Save <span id="rentSavingsMo" style="color:#51dea2;font-weight:700">$60</span>/month, <span id="rentSavingsTotal" style="color:#51dea2;font-weight:700">$180</span> total.</p>
                 <p style="margin:12px 0 0;font-size:11.5px;color:#71fbbd;font-weight:700;letter-spacing:.02em">Includes membership subscription</p>
-                <p style="margin:16px 0 0;font-size:10px;color:#5d6a62;line-height:1.5">Available to new Tonal rental subscribers only. Limit one promotional offer per customer.</p>
               </div>
+
+              <!-- why rent -->
+              <div style="margin-top:16px;padding:16px 18px;border-radius:16px;background:rgba(23,28,31,.6);border:1px solid rgba(134,148,138,.16)">
+                <span style="display:block;font-size:10px;font-weight:700;letter-spacing:.14em;color:#51dea2;text-transform:uppercase">Why rent</span>
+                <div style="margin-top:12px;display:flex;flex-direction:column;gap:10px">
+                  <div style="display:flex;gap:10px;align-items:flex-start">
+                    <span style="width:6px;height:6px;border-radius:50%;background:#51dea2;flex:none;margin-top:5px;box-shadow:0 0 8px #51dea2"></span>
+                    <span style="font-size:11.5px;color:#bbcabf;line-height:1.45"><span style="color:#f1f5f3;font-weight:600">No long-term commitment</span> — cancel anytime.</span>
+                  </div>
+                  <div style="display:flex;gap:10px;align-items:flex-start">
+                    <span style="width:6px;height:6px;border-radius:50%;background:#51dea2;flex:none;margin-top:5px;box-shadow:0 0 8px #51dea2"></span>
+                    <span style="font-size:11.5px;color:#bbcabf;line-height:1.45"><span style="color:#f1f5f3;font-weight:600">No cancellation or shipping fees</span> to return the trainer.</span>
+                  </div>
+                  <div style="display:flex;gap:10px;align-items:flex-start">
+                    <span style="width:6px;height:6px;border-radius:50%;background:#51dea2;flex:none;margin-top:5px;box-shadow:0 0 8px #51dea2"></span>
+                    <span style="font-size:11.5px;color:#bbcabf;line-height:1.45"><span style="color:#f1f5f3;font-weight:600">Membership included</span> — ready to train from day one.</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- tonal image -->
+              <img src="tonal-space.png" alt="Tonal wall-mounted footprint" style="margin-top:16px;width:100%;border-radius:14px;border:1px solid rgba(134,148,138,.2);display:block">
+              <span style="display:block;margin-top:8px;font-size:10.5px;color:#5d6a62;line-height:1.4">Wall-mounted footprint — about 7 ft × 7 ft of clear training space.</span>
+
+              <p style="margin:16px 0 0;font-size:10px;color:#5d6a62;line-height:1.5">Available to new Tonal rental subscribers only. Limit one promotional offer per customer.</p>
             </div>
             <!-- ============ END RENT FLOW ============ -->
 
