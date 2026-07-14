@@ -60,6 +60,15 @@
               </button>
             </div>
 
+            <!-- buy / rent toggle -->
+            <div style="display:flex;border-radius:14px;border:1px solid rgba(134,148,138,.2);overflow:hidden;background:rgba(0,0,0,.2);margin-top:14px;flex:none">
+              <button data-action="setPurchaseModeBuy" id="buyModeBtn" style="flex:1;height:42px;border:none;font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase">Buy</button>
+              <button data-action="setPurchaseModeRent" id="rentModeBtn" style="flex:1;height:42px;border:none;font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase">Rent</button>
+            </div>
+
+            <!-- ============ BUY FLOW ============ -->
+            <div id="buyFlow">
+
             <!-- hero all-in sticker -->
             <div style="margin-top:12px;display:flex;align-items:flex-end;gap:10px">
               <span id="allInHero" style="font-family:'Big Shoulders Display',sans-serif;font-weight:900;font-size:82px;line-height:.82;letter-spacing:-.01em;color:#f3fbff;height:75px">$0</span>
@@ -77,13 +86,15 @@
             <span style="display:block;margin-top:22px;font-size:10px;font-weight:700;letter-spacing:.14em;color:#86948a;text-transform:uppercase">Shipping &amp; installation</span>
             <div id="shippingList" style="margin-top:11px;display:flex;gap:10px"></div>
 
-            <!-- extended warranty (Tonal 2 only) -->
-            <div id="warrantySection">
-              <div style="margin-top:22px;display:flex;align-items:center;justify-content:space-between">
-                <span style="font-size:10px;font-weight:700;letter-spacing:.14em;color:#86948a;text-transform:uppercase">Extended warranty</span>
-                <span style="font-size:9.5px;font-weight:700;letter-spacing:.1em;color:#71fbbd;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:rgba(81,222,162,.1);border:1px solid rgba(81,222,162,.3)">Optional</span>
+            <!-- extended warranty (collapsible) -->
+            <div id="warrantySection" style="margin-top:22px;padding:16px 18px;border-radius:16px;background:rgba(23,28,31,.6);border:1px solid rgba(134,148,138,.16)">
+              <button data-action="toggleWarrantyOpen" style="all:unset;cursor:pointer;display:flex;align-items:center;justify-content:space-between;width:100%">
+                <span style="font-size:10px;font-weight:700;letter-spacing:.14em;color:#86948a;text-transform:uppercase"><span id="warrantyToggleIcon">+</span> Extended warranty</span>
+                <span id="warrantyCollapsedValue" style="font-family:'Big Shoulders Display',sans-serif;font-weight:700;font-size:15px;color:#51dea2"></span>
+              </button>
+              <div id="warrantyControls" style="display:none;margin-top:11px">
+                <div id="warrantyList" style="display:flex;flex-direction:column;gap:10px"></div>
               </div>
-              <div id="warrantyList" style="margin-top:11px;display:flex;flex-direction:column;gap:10px"></div>
             </div>
 
             <!-- sales tax (rep) -->
@@ -97,26 +108,31 @@
               </div>
             </div>
 
-            <!-- discount on trainer (Tonal 2 only) -->
+            <!-- discount on trainer (collapsible, Tonal 2 only) -->
             <div id="discountBlock" style="margin-top:16px;padding:16px 18px;border-radius:16px;background:rgba(23,28,31,.6);border:1px solid rgba(134,148,138,.16)">
-              <div style="display:flex;align-items:center;justify-content:space-between">
-                <span style="font-size:10px;font-weight:700;letter-spacing:.14em;color:#86948a;text-transform:uppercase">Discount on trainer</span>
-                <div style="display:flex;align-items:center;gap:10px">
-                  <div style="display:flex;border-radius:8px;border:1px solid rgba(134,148,138,.3);overflow:hidden">
-                    <button data-action="setDiscountModePct" id="discModePctBtn" style="width:26px;height:22px;border:none;font-size:11px;font-weight:700;cursor:pointer">%</button>
-                    <button data-action="setDiscountModeDollar" id="discModeDollarBtn" style="width:26px;height:22px;border:none;font-size:11px;font-weight:700;cursor:pointer">$</button>
+              <button data-action="toggleDiscountOpen" style="all:unset;cursor:pointer;display:flex;align-items:center;justify-content:space-between;width:100%">
+                <span style="font-size:10px;font-weight:700;letter-spacing:.14em;color:#86948a;text-transform:uppercase"><span id="discountToggleIcon">+</span> Discount on trainer</span>
+                <span id="discountCollapsedValue" style="font-family:'Big Shoulders Display',sans-serif;font-weight:700;font-size:15px;color:#51dea2"></span>
+              </button>
+              <div id="discountControls" style="display:none">
+                <div style="display:flex;align-items:center;justify-content:flex-end;margin-top:14px">
+                  <div style="display:flex;align-items:center;gap:10px">
+                    <div style="display:flex;border-radius:8px;border:1px solid rgba(134,148,138,.3);overflow:hidden">
+                      <button data-action="setDiscountModePct" id="discModePctBtn" style="width:26px;height:22px;border:none;font-size:11px;font-weight:700;cursor:pointer">%</button>
+                      <button data-action="setDiscountModeDollar" id="discModeDollarBtn" style="width:26px;height:22px;border:none;font-size:11px;font-weight:700;cursor:pointer">$</button>
+                    </div>
+                    <span style="display:flex;align-items:baseline">
+                      <span id="discountDollarPrefix" style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:26px;color:#51dea2;line-height:1;display:none">$</span>
+                      <input id="discountValueInput" type="number" inputmode="decimal" step="1" min="0" value="0" style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:26px;color:#51dea2;line-height:1;background:transparent;border:none;outline:none;text-align:right;width:64px">
+                      <span id="discountPctSuffix" style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:26px;color:#51dea2;line-height:1">%</span>
+                    </span>
                   </div>
-                  <span style="display:flex;align-items:baseline">
-                    <span id="discountDollarPrefix" style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:26px;color:#51dea2;line-height:1;display:none">$</span>
-                    <input id="discountValueInput" type="number" inputmode="decimal" step="1" min="0" value="0" style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:26px;color:#51dea2;line-height:1;background:transparent;border:none;outline:none;text-align:right;width:64px">
-                    <span id="discountPctSuffix" style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:26px;color:#51dea2;line-height:1">%</span>
-                  </span>
                 </div>
-              </div>
-              <input id="discountRange" type="range" min="0" max="30" step="1" value="0" style="width:100%;margin-top:14px;height:6px">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">
-                <span id="discountMinLabel" style="font-size:10px;color:#5d6a62">0%</span>
-                <span id="discountMaxLabel" style="font-size:10px;color:#5d6a62">30%</span>
+                <input id="discountRange" type="range" min="0" max="30" step="1" value="0" style="width:100%;margin-top:14px;height:6px">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">
+                  <span id="discountMinLabel" style="font-size:10px;color:#5d6a62">0%</span>
+                  <span id="discountMaxLabel" style="font-size:10px;color:#5d6a62">30%</span>
+                </div>
               </div>
             </div>
 
@@ -161,6 +177,24 @@
               <span style="width:7px;height:7px;border-radius:50%;background:#51dea2;flex:none;margin-top:4px;box-shadow:0 0 8px #51dea2;align-self:center"></span><span style="font-size:12px;color:#bbcabf;line-height:1.5;flex-grow:0;align-self:center">Prefer to pay monthly? <span style="color:#f1f5f3;font-weight:600">Ask your rep about 0% APR financing.</span></span>
             </div>
             <button data-action="goCompare" style="margin-top:16px;width:467px;max-width:100%;border-radius:999px;border:none;background:#51dea2;color:#051512;font-weight:700;letter-spacing:.03em;display:flex;align-items:center;justify-content:center;gap:10px;flex-grow:0;flex-shrink:0;font-size:18px;align-self:center;height:50px;position:static">Compare Cost <span style="font-size:17px">→</span></button>
+
+            </div>
+            <!-- ============ END BUY FLOW ============ -->
+
+            <!-- ============ RENT FLOW ============ -->
+            <div id="rentFlow" style="display:none;flex-direction:column">
+              <div style="margin-top:18px;padding:22px 20px;border-radius:18px;background:rgba(23,28,31,.6);border:1px solid rgba(134,148,138,.16)">
+                <span style="font-size:10px;font-weight:700;letter-spacing:.14em;color:#86948a;text-transform:uppercase">Rent <span id="rentTrainerName">Tonal 2</span></span>
+                <div style="margin-top:12px;display:flex;align-items:baseline;gap:8px">
+                  <span id="rentPromoPrice" style="font-family:'Big Shoulders Display',sans-serif;font-weight:900;font-size:56px;line-height:1;color:#51dea2">$219</span>
+                  <span style="font-size:13px;color:#86948a;line-height:1.3">/mo for the<br>first 3 months</span>
+                </div>
+                <p style="margin:14px 0 0;font-size:12.5px;color:#bbcabf;line-height:1.5">Regular monthly rate: <span id="rentRegularPrice" style="color:#dfe3e7;font-weight:600">$279</span>/mo. Save <span id="rentSavingsMo" style="color:#51dea2;font-weight:700">$60</span>/month, <span id="rentSavingsTotal" style="color:#51dea2;font-weight:700">$180</span> total.</p>
+                <p style="margin:12px 0 0;font-size:11.5px;color:#71fbbd;font-weight:700;letter-spacing:.02em">Includes membership subscription</p>
+                <p style="margin:16px 0 0;font-size:10px;color:#5d6a62;line-height:1.5">Available to new Tonal rental subscribers only. Limit one promotional offer per customer.</p>
+              </div>
+            </div>
+            <!-- ============ END RENT FLOW ============ -->
 
           </section>
 
@@ -242,8 +276,14 @@
             <!-- NOT SENT -->
             <div id="notSentPanel" style="display:flex;flex-direction:column;height:100%">
               <span style="font-size:10px;font-weight:600;letter-spacing:.18em;color:#51dea2;text-transform:uppercase">Take it home</span>
-              <h2 style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:30px;line-height:1.03;color:#f1f5f3;margin:9px 0 0">Want your quote<br>emailed?</h2>
-              <p style="font-size:12.5px;color:#86948a;line-height:1.5;margin:9px 0 0">Your full quote — model, what's included, and the all-in delivered price — straight to your inbox.</p>
+              <h2 style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:30px;line-height:1.03;color:#f1f5f3;margin:9px 0 0">Want your quote<br><span id="contactMethodHeadline">emailed</span>?</h2>
+              <p style="font-size:12.5px;color:#86948a;line-height:1.5;margin:9px 0 0">Your full quote — model, what's included, and the all-in delivered price — <span id="contactMethodCopy">straight to your inbox</span>.</p>
+
+              <!-- contact method toggle -->
+              <div style="display:flex;border-radius:14px;border:1px solid rgba(134,148,138,.2);overflow:hidden;background:rgba(0,0,0,.2);margin-top:14px;flex:none">
+                <button data-action="setContactMethodEmail" id="contactMethodEmailBtn" style="flex:1;height:40px;border:none;font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase">Email</button>
+                <button data-action="setContactMethodText" id="contactMethodTextBtn" style="flex:1;height:40px;border:none;font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase">Text</button>
+              </div>
 
               <!-- tonal image -->
               <img src="tonal-space.png" alt="Tonal wall-mounted footprint" style="margin-top:16px;width:100%;border-radius:14px;border:1px solid rgba(134,148,138,.2);display:block">
@@ -258,7 +298,7 @@
                 <div id="summaryListSend"></div>
               </div>
 
-              <!-- email -->
+              <!-- contact input -->
               <div id="emailWrap" style="margin-top:18px;display:flex;align-items:center;gap:10px;padding:6px 6px 6px 18px;border-radius:999px;background:rgba(255,255,255,.03);border:1px solid rgba(134,148,138,.2)">
                 <input id="emailInput" placeholder="name@email.com" inputmode="email" style="flex:1;min-width:0;background:transparent;border:none;color:#f1f5f3;font-size:15px">
                 <button id="sendBtn" data-action="sendQuote" disabled style="flex:none;height:48px;padding:0 24px;border-radius:999px;border:none;background:#2b3a33;color:#051512;font-weight:700;font-size:14px;letter-spacing:.03em;opacity:.5">Send</button>
