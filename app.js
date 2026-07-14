@@ -248,8 +248,8 @@
     }).join('');
   }
 
-  function renderWarrantyList() {
-    el('warrantyList').innerHTML = WARRANTY.map((w) => {
+  function renderWarrantyList(containerId) {
+    el(containerId).innerHTML = WARRANTY.map((w) => {
       const on = w.key === state.warranty;
       return `<button data-action="selectWarranty" data-value="${w.key}" style="display:flex;align-items:center;justify-content:space-between;width:100%;text-align:left;padding:14px 15px;border-radius:14px;background:${on ? 'rgba(81,222,162,.08)' : 'rgba(255,255,255,.015)'};border:1px solid ${on ? 'rgba(81,222,162,.45)' : 'rgba(134,148,138,.18)'}">
         <span style="display:flex;align-items:center;gap:12px">
@@ -354,7 +354,10 @@
     el('allInHero').textContent = vals.allInLabel;
     renderBundleList(vals);
     renderShippingList();
-    renderWarrantyList();
+    renderWarrantyList('warrantyListAlways');
+    renderWarrantyList('warrantyListToggle');
+    el('warrantySectionAlways').style.display = vals.isTonal2 ? 'block' : 'none';
+    el('warrantySectionToggle').style.display = vals.isTonal1 ? 'block' : 'none';
     el('warrantyControls').style.display = vals.warrantyOpen ? 'block' : 'none';
     el('warrantyToggleIcon').textContent = vals.warrantyOpen ? '−' : '+';
     el('warrantyCollapsedValue').textContent = (!vals.warrantyOpen && vals.warrantyPrice > 0) ? fmt(vals.warrantyPrice) : '';
