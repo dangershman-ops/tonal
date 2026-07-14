@@ -14,13 +14,13 @@
   // Leave blank to skip logging — the Send flow still works locally either way.
   const SHEETS_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbzg5uDJ_HtuLQAO2gcgZpmYyuCJfDqBlxd_P4Wvo7L-cUmd1k7bdPwLsI97wFIuPrkspw/exec';
 
-  function logQuoteToSheet(email, quoteLines, totalPrice) {
+  function logQuoteToSheet(contactMethod, contactValue, quoteLines, totalPrice) {
     if (!SHEETS_WEBHOOK_URL) return;
     fetch(SHEETS_WEBHOOK_URL, {
       method: 'POST',
       mode: 'no-cors',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ email, quoteLines, totalPrice, timestamp: new Date().toISOString() }),
+      body: JSON.stringify({ contactMethod, contactValue, quoteLines, totalPrice, timestamp: new Date().toISOString() }),
     }).catch((err) => console.warn('Sheet logging failed:', err));
   }
 
@@ -41,6 +41,11 @@
     { key: 'five', name: '5-Year Warranty', price: 449 },
   ];
 
+  const RENT = {
+    tonal2: { promo: 219, regular: 279, savingsMo: 60, savingsTotal: 180 },
+    tonal1: { promo: 159, regular: 219, savingsMo: 60, savingsTotal: 180 },
+  };
+
   const H_LABELS = { 1: 'Just me', 2: 'Me & my partner', 3: 'Small family', 4: 'Small family', 5: 'Whole family', 6: 'Whole family' };
 
   const GYM_PP = 65;     // $/mo per person — U.S. Health & Fitness Association
@@ -49,17 +54,21 @@
 
   const state = {
     step: 0,
+    purchaseMode: 'buy',
     trainer: 'tonal2',
     bundle: 'essential',
     shipping: 'standard',
     warranty: 'none',
+    warrantyOpen: false,
     taxPct: 7,
     discountMode: 'pct',
     discountPct: 0,
     discountDollar: 0,
+    discountOpen: false,
     household: 1,
     compareTab: 'membership',
-    email: '',
+    contactMethod: 'email',
+    contactValue: '',
     sent: false,
   };
 
@@ -88,9 +97,9 @@
     const shipObj = SHIP.find((x) => x.key === s.shipping) || SHIP[0];
     const shippingCost = shipObj.price;
 
-    // ---- extended warranty (optional, Tonal 2 only) ----
+    // ---- extended warranty (optional) ----
     const warrantyObj = WARRANTY.find((w) => w.key === s.warranty) || WARRANTY[0];
-    const warrantyPrice = isTonal2 ? warrantyObj.price : 0;
+    const warrantyPrice = warrantyObj.price;
 
     // ---- totals ----
     const discountMode = s.discountMode;
@@ -115,11 +124,9 @@
     summary.push(
       { label: bundleObj.name, value: fmt(bundlePrice) },
       { label: shipObj.label + ' shipping & install', value: fmt(shippingCost) },
+      { label: warrantyObj.name, value: fmt(warrantyPrice) },
+      { label: 'Sales tax (' + taxPctLabel + '%)', value: fmt(taxAmount) }
     );
-    if (isTonal2) {
-      summary.push({ label: warrantyObj.name, value: fmt(warrantyPrice) });
-    }
-    summary.push({ label: 'Sales tax (' + taxPctLabel + '%)', value: fmt(taxAmount) });
 
     // ---- compare: membership economics ----
     const membership = CONFIG.membershipPrice;
@@ -149,7 +156,16 @@
     // ---- compare: home gym sticker ----
     const tonalBarPct = Math.max(6, Math.round((allIn / HOME_GYM_HIGH) * 100));
     const isMembershipTab = s.compareTab === 'membership';
-    const emailValid = /.+@.+\..+/.test(s.email.trim());
+
+    // ---- contact method (email or text) ----
+    const contactMethod = s.contactMethod;
+    const contactValue = s.contactValue;
+    const contactValid = contactMethod === 'text'
+      ? contactValue.replace(/\D/g, '').length >= 10
+      : /.+@.+\..+/.test(contactValue.trim());
+
+    // ---- rent pricing ----
+    const rentInfo = RENT[s.trainer];
 
     return {
       step: s.step,
@@ -165,7 +181,13 @@
       discountMode,
       discountPct,
       discountDollar,
+      discountAmount,
+      discountOpen: s.discountOpen,
+      warrantyPrice,
+      warrantyOpen: s.warrantyOpen,
       trainerPrice,
+      purchaseMode: s.purchaseMode,
+      rentInfo,
       switchLabel: isTonal2 ? 'Switch to Tonal 1' : 'Switch to Tonal 2',
 
       household,
@@ -185,8 +207,9 @@
         { label: 'Home Gym', sub: 'Rack · cables · dumbbells · bench', note: 'according to RitFit', valueLabel: '$7K–$25K', valColor: '#86948a', barPct: 100, barBg: 'linear-gradient(180deg,#5d6a62,#3a4440)', barGlow: 'none' },
       ],
 
-      email: s.email,
-      emailValid,
+      contactMethod,
+      contactValue,
+      contactValid,
     };
   }
 
@@ -310,14 +333,35 @@
     el('stepCompareColor').style.color = vals.step === 1 ? '#51dea2' : (vals.step > 1 ? '#bbcabf' : '#5d6a62');
     el('stepSendColor').style.color = vals.step === 2 ? '#51dea2' : '#5d6a62';
 
-    // ---- price screen ----
+    // ---- price screen: buy / rent toggle ----
+    const isBuy = vals.purchaseMode === 'buy';
+    el('buyModeBtn').style.background = isBuy ? '#51dea2' : 'transparent';
+    el('buyModeBtn').style.color = isBuy ? '#051512' : '#86948a';
+    el('rentModeBtn').style.background = isBuy ? 'transparent' : '#51dea2';
+    el('rentModeBtn').style.color = isBuy ? '#86948a' : '#051512';
+    el('buyFlow').style.display = isBuy ? 'block' : 'none';
+    el('rentFlow').style.display = isBuy ? 'none' : 'flex';
+
+    // ---- price screen: rent flow ----
+    el('rentTrainerName').textContent = vals.trainerName;
+    el('rentPromoPrice').textContent = fmt(vals.rentInfo.promo);
+    el('rentRegularPrice').textContent = fmt(vals.rentInfo.regular);
+    el('rentSavingsMo').textContent = fmt(vals.rentInfo.savingsMo);
+    el('rentSavingsTotal').textContent = fmt(vals.rentInfo.savingsTotal);
+
+    // ---- price screen: buy flow ----
     el('switchLabel').textContent = vals.switchLabel;
     el('allInHero').textContent = vals.allInLabel;
     renderBundleList(vals);
     renderShippingList();
     renderWarrantyList();
-    el('warrantySection').style.display = vals.isTonal2 ? 'block' : 'none';
+    el('warrantyControls').style.display = vals.warrantyOpen ? 'block' : 'none';
+    el('warrantyToggleIcon').textContent = vals.warrantyOpen ? '−' : '+';
+    el('warrantyCollapsedValue').textContent = (!vals.warrantyOpen && vals.warrantyPrice > 0) ? fmt(vals.warrantyPrice) : '';
     el('discountBlock').style.display = vals.isTonal2 ? 'block' : 'none';
+    el('discountControls').style.display = vals.discountOpen ? 'block' : 'none';
+    el('discountToggleIcon').textContent = vals.discountOpen ? '−' : '+';
+    el('discountCollapsedValue').textContent = (!vals.discountOpen && vals.discountAmount > 0) ? '-' + fmt(vals.discountAmount) : '';
     if (document.activeElement !== el('taxPctInput')) el('taxPctInput').value = vals.taxPctLabel;
     syncDiscountModeUI(vals);
     const discountDisplayValue = vals.discountMode === 'dollar' ? vals.discountDollar : vals.discountPct;
@@ -354,20 +398,32 @@
     el('recapTrainerName').textContent = vals.trainerName;
     el('recapAllIn').textContent = vals.allInLabel;
     renderSendSummaryRows('summaryListSend', vals.summary);
-    updateEmailDependent(vals);
+
+    const isEmail = vals.contactMethod === 'email';
+    el('contactMethodEmailBtn').style.background = isEmail ? '#51dea2' : 'transparent';
+    el('contactMethodEmailBtn').style.color = isEmail ? '#051512' : '#86948a';
+    el('contactMethodTextBtn').style.background = isEmail ? 'transparent' : '#51dea2';
+    el('contactMethodTextBtn').style.color = isEmail ? '#86948a' : '#051512';
+    el('contactMethodHeadline').textContent = isEmail ? 'emailed' : 'texted';
+    el('contactMethodCopy').textContent = isEmail ? 'straight to your inbox' : 'straight to your phone';
+    const input = el('emailInput');
+    input.placeholder = isEmail ? 'name@email.com' : '(555) 555-5555';
+    input.inputMode = isEmail ? 'email' : 'tel';
+    if (document.activeElement !== input) input.value = vals.contactValue;
+    updateContactDependent(vals);
 
     el('notSentPanel').style.display = state.sent ? 'none' : 'flex';
     el('sentPanel').style.display = state.sent ? 'flex' : 'none';
     el('sentTrainerName').textContent = vals.trainerName;
-    el('sentEmail').textContent = vals.email;
+    el('sentEmail').textContent = vals.contactValue;
   }
 
-  function updateEmailDependent(vals) {
-    el('emailWrap').style.border = '1px solid ' + (vals.emailValid ? 'rgba(81,222,162,.4)' : 'rgba(134,148,138,.2)');
+  function updateContactDependent(vals) {
+    el('emailWrap').style.border = '1px solid ' + (vals.contactValid ? 'rgba(81,222,162,.4)' : 'rgba(134,148,138,.2)');
     const btn = el('sendBtn');
-    btn.disabled = !vals.emailValid;
-    btn.style.background = vals.emailValid ? '#51dea2' : '#2b3a33';
-    btn.style.opacity = vals.emailValid ? '1' : '0.5';
+    btn.disabled = !vals.contactValid;
+    btn.style.background = vals.contactValid ? '#51dea2' : '#2b3a33';
+    btn.style.opacity = vals.contactValid ? '1' : '0.5';
   }
 
   function updateTaxDependent() {
@@ -397,24 +453,30 @@
       case 'goCompare': setState({ step: 1 }); break;
       case 'goSend': setState({ step: 2 }); break;
       case 'switchTrainer': setState({ trainer: state.trainer === 'tonal2' ? 'tonal1' : 'tonal2' }); break;
+      case 'setPurchaseModeBuy': setState({ purchaseMode: 'buy' }); break;
+      case 'setPurchaseModeRent': setState({ purchaseMode: 'rent' }); break;
       case 'selectBundle': setState({ bundle: value }); break;
       case 'selectShipping': setState({ shipping: value }); break;
       case 'selectWarranty': setState({ warranty: value }); break;
+      case 'toggleWarrantyOpen': setState({ warrantyOpen: !state.warrantyOpen }); break;
       case 'setDiscountModePct': setState({ discountMode: 'pct' }); break;
       case 'setDiscountModeDollar': setState({ discountMode: 'dollar' }); break;
+      case 'toggleDiscountOpen': setState({ discountOpen: !state.discountOpen }); break;
       case 'selectHousehold': setState({ household: parseInt(value, 10) }); break;
       case 'setMembershipTab': setState({ compareTab: 'membership' }); break;
       case 'setHomeGymTab': setState({ compareTab: 'homeGym' }); break;
+      case 'setContactMethodEmail': setState({ contactMethod: 'email' }); break;
+      case 'setContactMethodText': setState({ contactMethod: 'text' }); break;
       case 'sendQuote': {
         const vals = computeVals();
-        if (vals.emailValid) {
+        if (vals.contactValid) {
           const quoteLines = vals.summary.map((r) => r.label + ': ' + r.value).join(' + ');
-          logQuoteToSheet(state.email.trim(), quoteLines, vals.allInLabel);
+          logQuoteToSheet(vals.contactMethod, vals.contactValue.trim(), quoteLines, vals.allInLabel);
           setState({ sent: true });
         }
         break;
       }
-      case 'restart': setState({ step: 0, sent: false, email: '' }); el('emailInput').value = ''; break;
+      case 'restart': setState({ step: 0, sent: false, contactValue: '' }); el('emailInput').value = ''; break;
     }
   });
 
@@ -440,8 +502,8 @@
   });
 
   el('emailInput').addEventListener('input', (e) => {
-    state.email = e.target.value;
-    updateEmailDependent(computeVals());
+    state.contactValue = e.target.value;
+    updateContactDependent(computeVals());
   });
 
   renderFull();
