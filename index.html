@@ -226,6 +226,8 @@
               <span style="display:block;margin-top:8px;font-size:10.5px;color:#5d6a62;line-height:1.4">Wall-mounted footprint — about 7 ft × 7 ft of clear training space.</span>
 
               <p style="margin:16px 0 0;font-size:10px;color:#5d6a62;line-height:1.5">Available to new Tonal rental subscribers only. Limit one promotional offer per customer.</p>
+
+              <button data-action="goCompare" style="margin-top:16px;width:467px;max-width:100%;border-radius:999px;border:none;background:#51dea2;color:#051512;font-weight:700;letter-spacing:.03em;display:flex;align-items:center;justify-content:center;gap:10px;flex-grow:0;flex-shrink:0;font-size:18px;align-self:center;height:50px;position:static">Compare Cost <span style="font-size:17px">→</span></button>
             </div>
             <!-- ============ END RENT FLOW ============ -->
 
@@ -233,6 +235,9 @@
 
           <!-- ===================== COMPARE SCREEN ===================== -->
           <section class="noscroll" style="width:33.3333%;height:100%;overflow-y:auto;padding:16px 24px 24px;display:flex;flex-direction:column">
+
+            <!-- ============ COMPARE: BUY VIEW ============ -->
+            <div id="compareBuyView" style="display:flex;flex-direction:column;flex:1">
 
             <!-- tab toggle -->
             <div style="display:flex;border-radius:14px;border:1px solid rgba(134,148,138,.2);overflow:hidden;background:rgba(0,0,0,.2);flex:none">
@@ -294,6 +299,24 @@
                 <span style="font-size:11.5px;color:#bbcabf;line-height:1.5">Get the expertise of a personal trainer and a full gym in your home for a fraction of the price!</span>
               </div>
             </div>
+
+            </div>
+            <!-- ============ END COMPARE: BUY VIEW ============ -->
+
+            <!-- ============ COMPARE: RENT VIEW ============ -->
+            <div id="compareRentView" style="display:none;flex-direction:column;flex:1">
+              <span style="font-size:10px;font-weight:600;letter-spacing:.18em;color:#51dea2;text-transform:uppercase;display:block;margin-top:16px">Monthly rent · vs personal training</span>
+              <h2 style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:27px;line-height:1.04;color:#f1f5f3;margin:8px 0 0">Train for less<br>than a trainer.</h2>
+              <p style="font-size:11.5px;color:#86948a;margin:7px 0 0;line-height:1.45">Renting <span id="rentCompareTrainerName">Tonal 2</span> at <span id="rentCompareMoLabel">$219</span>/mo (first 3 months) includes your membership — no separate trainer fees.</p>
+
+              <div id="rentCompareColumns" style="margin-top:22px;flex:1;display:flex;gap:10px;align-items:flex-end;min-height:210px"></div>
+
+              <div id="rentSavesCallout" style="margin-top:14px;padding:13px 15px;border-radius:16px;display:flex;align-items:center;gap:12px">
+                <span id="rentSavesLabel" style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:26px;line-height:1;white-space:nowrap">$0</span>
+                <span id="rentSavesCopy" style="font-size:12px;color:#bbcabf;line-height:1.4"></span>
+              </div>
+            </div>
+            <!-- ============ END COMPARE: RENT VIEW ============ -->
 
             <!-- nav -->
             <div style="display:flex;gap:12px;margin-top:16px;flex:none">
