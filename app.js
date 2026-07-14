@@ -167,6 +167,21 @@
     // ---- rent pricing ----
     const rentInfo = RENT[s.trainer];
 
+    // ---- compare: rent vs personal training ----
+    const rentMo = rentInfo.promo;
+    const rentVsTrainerMax = Math.max(rentMo, trainerMo);
+    const rentBarPct = (v) => Math.max(7, Math.round((v / rentVsTrainerMax) * 100));
+    const rentCompareColumns = [
+      { label: 'Rent ' + trainerName, sub: 'First 3 months · membership included', note: '', valueLabel: fmt(rentMo) + '/mo', valColor: '#51dea2', barPct: rentBarPct(rentMo), barBg: 'linear-gradient(180deg,#71fbbd,#26bf86)', barGlow: '0 0 28px rgba(81,222,162,.4)' },
+      { label: 'Personal Trainer', sub: '$65/hr · 4 sessions/mo', note: 'according to NESTA certified', valueLabel: fmt(trainerMo) + '/mo', valColor: '#e88a8e', barPct: rentBarPct(trainerMo), barBg: 'linear-gradient(180deg,#c54e53,#7e2f33)', barGlow: 'none' },
+    ];
+    const rentTrainerDiff = trainerMo - rentMo;
+    const rentSavesPositive = rentTrainerDiff >= 0;
+    const rentSavesLabel = '$' + Math.round(Math.abs(rentTrainerDiff));
+    const rentSavesCopy = rentSavesPositive
+      ? 'less/mo than a personal trainer — and you keep unlimited access at home, every day.'
+      : 'more/mo than a personal trainer for the first 3 months — but you get unlimited training, every day, at home.';
+
     return {
       step: s.step,
       trainerName,
@@ -188,6 +203,13 @@
       trainerPrice,
       purchaseMode: s.purchaseMode,
       rentInfo,
+      rentCompareColumns,
+      rentSavesLabel,
+      rentSavesPositive,
+      rentSavesCopy,
+      rentSavesColor: rentSavesPositive ? '#51dea2' : '#f2c14f',
+      rentSavesCalloutBg: rentSavesPositive ? 'linear-gradient(150deg,rgba(81,222,162,.12),rgba(23,28,31,.4))' : 'linear-gradient(150deg,rgba(242,193,79,.10),rgba(23,28,31,.4))',
+      rentSavesCalloutBorder: rentSavesPositive ? 'rgba(81,222,162,.26)' : 'rgba(242,193,79,.32)',
       switchLabel: isTonal2 ? 'Switch to Tonal 1' : 'Switch to Tonal 2',
 
       household,
@@ -284,8 +306,8 @@
       <button data-action="selectHousehold" data-value="${h.n}" style="flex:1;height:40px;border-radius:10px;border:1px solid ${h.border};background:${h.bg};color:${h.color};font-family:'Big Shoulders Display',sans-serif;font-weight:700;font-size:17px">${h.n}</button>`).join('');
   }
 
-  function renderCompareColumns(vals) {
-    el('compareColumns').innerHTML = vals.columns.map((c) => `
+  function renderColumns(containerId, columns) {
+    el(containerId).innerHTML = columns.map((c) => `
       <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%">
         <span style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:18px;color:${c.valColor};margin-bottom:6px">${c.valueLabel}</span>
         <div style="width:100%;height:${c.barPct}%;min-height:8px;border-radius:10px 10px 3px 3px;background:${c.barBg};box-shadow:${c.barGlow}"></div>
@@ -374,6 +396,10 @@
     el('allInTotalPrice').textContent = vals.allInLabel;
     el('tonal1Compare').style.display = vals.isTonal1 ? 'block' : 'none';
 
+    // ---- compare screen: buy vs rent view ----
+    el('compareBuyView').style.display = vals.purchaseMode === 'rent' ? 'none' : 'flex';
+    el('compareRentView').style.display = vals.purchaseMode === 'rent' ? 'flex' : 'none';
+
     // ---- compare screen: tabs ----
     el('memTabBtn').style.background = vals.isMembershipTab ? '#51dea2' : 'transparent';
     el('memTabBtn').style.color = vals.isMembershipTab ? '#051512' : '#86948a';
@@ -386,7 +412,7 @@
     el('membershipLabel').textContent = vals.membershipLabel;
     el('householdLabel').textContent = vals.householdLabel;
     renderHouseholdList(vals);
-    renderCompareColumns(vals);
+    renderColumns('compareColumns', vals.columns);
     const callout = el('memSavesCallout');
     callout.style.background = vals.memSavesCalloutBg;
     callout.style.border = '1px solid ' + vals.memSavesCalloutBorder;
@@ -396,6 +422,17 @@
 
     // ---- compare screen: home gym tab ----
     renderHomeGymBars(vals);
+
+    // ---- compare screen: rent view ----
+    el('rentCompareTrainerName').textContent = vals.trainerName;
+    el('rentCompareMoLabel').textContent = fmt(vals.rentInfo.promo);
+    renderColumns('rentCompareColumns', vals.rentCompareColumns);
+    const rentCallout = el('rentSavesCallout');
+    rentCallout.style.background = vals.rentSavesCalloutBg;
+    rentCallout.style.border = '1px solid ' + vals.rentSavesCalloutBorder;
+    el('rentSavesLabel').style.color = vals.rentSavesColor;
+    el('rentSavesLabel').textContent = vals.rentSavesLabel;
+    el('rentSavesCopy').textContent = vals.rentSavesCopy;
 
     // ---- send screen ----
     el('recapTrainerName').textContent = vals.trainerName;
