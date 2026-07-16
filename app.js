@@ -14,13 +14,16 @@
   // Leave blank to skip logging; the Send flow still works locally either way.
   const SHEETS_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbzg5uDJ_HtuLQAO2gcgZpmYyuCJfDqBlxd_P4Wvo7L-cUmd1k7bdPwLsI97wFIuPrkspw/exec';
 
-  function logQuoteToSheet(contactMethod, contactValue, store, quoteLines, totalPrice) {
+  function logQuoteToSheet(contactMethod, contactValue, store, quoteLines, subtotalPreTax) {
     if (!SHEETS_WEBHOOK_URL) return;
     fetch(SHEETS_WEBHOOK_URL, {
       method: 'POST',
       mode: 'no-cors',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ contactMethod, contactValue, store, quoteLines, totalPrice, timestamp: new Date().toISOString() }),
+      // Logs the pre-tax subtotal only (sales tax is an estimate, not a firm charge).
+      // `totalPrice` is kept as an alias of the pre-tax value so an existing Apps Script
+      // that reads data.totalPrice keeps working — just relabel that sheet column.
+      body: JSON.stringify({ contactMethod, contactValue, store, quoteLines, subtotalPreTax, totalPrice: subtotalPreTax, timestamp: new Date().toISOString() }),
     }).catch((err) => console.warn('Sheet logging failed:', err));
   }
 
@@ -184,8 +187,8 @@
       { label: bundleObj.name, value: fmt(bundlePrice) },
       { label: shipObj.label + ' shipping & install', value: fmt(shippingCost) },
       { label: warrantyObj.name, value: fmt(warrantyPrice) },
-      { label: 'Subtotal', value: fmt(subtotal) },
-      { label: 'Sales tax (' + taxPctLabel + '%)', value: fmt(taxAmount) }
+      { label: 'Subtotal (pre-tax)', value: fmt(subtotal) },
+      { label: 'Est. sales tax (' + taxPctLabel + '%)', value: fmt(taxAmount) }
     );
 
     // ---- compare: membership economics ----
@@ -253,6 +256,7 @@
       isTonal2,
       isTonal1: !isTonal2,
       allInLabel: fmt(allIn),
+      subtotalLabel: fmt(subtotal),
       bundleObj,
       shipObj,
       summary,
@@ -588,8 +592,12 @@
       case 'sendQuote': {
         const vals = computeVals();
         if (vals.contactValid && vals.storeValid) {
-          const quoteLines = vals.summary.map((r) => r.label + ': ' + r.value).join(' + ');
-          logQuoteToSheet(vals.contactMethod, vals.contactValue.trim(), vals.store, quoteLines, vals.allInLabel);
+          // Exclude the estimated sales-tax line — log the pre-tax quote only.
+          const quoteLines = vals.summary
+            .filter((r) => !r.label.startsWith('Est. sales tax'))
+            .map((r) => r.label + ': ' + r.value)
+            .join(' + ');
+          logQuoteToSheet(vals.contactMethod, vals.contactValue.trim(), vals.store, quoteLines, vals.subtotalLabel);
           setState({ sent: true });
         }
         break;
@@ -612,8 +620,8 @@
 
   // populate state dropdown once
   el('taxStateSelect').innerHTML =
-    '<option value="">Custom / U.S. average</option>' +
-    STATE_TAX.map((s) => `<option value="${s.name}">${s.name} — ${s.pct}%</option>`).join('');
+    '<option value="">Custom rate</option>' +
+    STATE_TAX.map((s) => `<option value="${s.name}">${s.name} — est. ${s.pct}%</option>`).join('');
 
   el('taxStateSelect').addEventListener('change', (e) => {
     const name = e.target.value;
