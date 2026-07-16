@@ -250,6 +250,20 @@
       ? 'less/mo than a personal trainer, and you keep unlimited access at home, every day.'
       : 'more/mo than a personal trainer for the first 3 months, but you get unlimited training, every day, at home.';
 
+    // ---- quote that follows the chosen buy/rent mode ----
+    const isRent = s.purchaseMode === 'rent';
+    const rentSummary = [
+      { label: trainerName + ' rental · first 3 months', value: fmt(rentInfo.promo) + '/mo' },
+      { label: 'Regular rate (month 4+)', value: fmt(rentInfo.regular) + '/mo' },
+      { label: 'Membership', value: 'Included' },
+      { label: 'You save', value: fmt(rentInfo.savingsMo) + '/mo for 3 mo' },
+    ];
+    const sendSummary = isRent ? rentSummary : summary;
+    const recapValue = isRent ? fmt(rentInfo.promo) + '/mo' : fmt(allIn);
+    const logValue = isRent
+      ? fmt(rentInfo.promo) + '/mo (first 3 months, then ' + fmt(rentInfo.regular) + '/mo)'
+      : fmt(subtotal);
+
     return {
       step: s.step,
       trainerName,
@@ -257,6 +271,10 @@
       isTonal1: !isTonal2,
       allInLabel: fmt(allIn),
       subtotalLabel: fmt(subtotal),
+      isRent,
+      sendSummary,
+      recapValue,
+      logValue,
       bundleObj,
       shipObj,
       summary,
@@ -507,9 +525,9 @@
     el('rentSavesCopy').textContent = vals.rentSavesCopy;
 
     // ---- send screen ----
-    el('recapTrainerName').textContent = vals.trainerName;
-    el('recapAllIn').textContent = vals.allInLabel;
-    renderSendSummaryRows('summaryListSend', vals.summary);
+    el('recapTrainerName').textContent = vals.trainerName + (vals.isRent ? ' rental' : '');
+    el('recapAllIn').textContent = vals.recapValue;
+    renderSendSummaryRows('summaryListSend', vals.sendSummary);
 
     const isEmail = vals.contactMethod === 'email';
     el('contactMethodEmailBtn').style.background = isEmail ? '#51dea2' : 'transparent';
@@ -552,8 +570,8 @@
     el('allInHero').textContent = vals.allInLabel;
     el('allInTotalPrice').textContent = vals.allInLabel;
     renderSummaryRows('summaryListPrice', vals.summary);
-    renderSendSummaryRows('summaryListSend', vals.summary);
-    el('recapAllIn').textContent = vals.allInLabel;
+    renderSendSummaryRows('summaryListSend', vals.sendSummary);
+    el('recapAllIn').textContent = vals.recapValue;
     renderHomeGymBars(vals);
   }
 
@@ -592,12 +610,12 @@
       case 'sendQuote': {
         const vals = computeVals();
         if (vals.contactValid && vals.storeValid) {
-          // Exclude the estimated sales-tax line — log the pre-tax quote only.
-          const quoteLines = vals.summary
+          // Follow the chosen buy/rent mode; for buy, exclude the estimated tax line.
+          const quoteLines = vals.sendSummary
             .filter((r) => !r.label.startsWith('Est. sales tax'))
             .map((r) => r.label + ': ' + r.value)
             .join(' + ');
-          logQuoteToSheet(vals.contactMethod, vals.contactValue.trim(), vals.store, quoteLines, vals.subtotalLabel);
+          logQuoteToSheet(vals.contactMethod, vals.contactValue.trim(), vals.store, quoteLines, vals.logValue);
           setState({ sent: true });
         }
         break;
