@@ -521,6 +521,7 @@
       case 'setHomeGymTab': setState({ compareTab: 'homeGym' }); break;
       case 'setContactMethodEmail': setState({ contactMethod: 'email' }); break;
       case 'setContactMethodText': setState({ contactMethod: 'text' }); break;
+      case 'useAvgTax': setState({ taxPct: AVG_SALES_TAX_PCT }); break;
       case 'openInfoPage':
         INFO_PAGE_IDS.forEach((id) => { el(id).style.display = 'none'; });
         el(value + 'Page').style.display = 'block';
