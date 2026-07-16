@@ -54,6 +54,61 @@
   const AVG_SALES_TAX_PCT = 6.66; // simple average of combined state+local rate, all 50 states, Tax Foundation Jan 2026 data
   const INFO_PAGE_IDS = ['accessoriesPage', 'warrantyPage', 'installationPage'];
 
+  // Combined state + avg local sales tax rate by state, Tax Foundation Jan 2026 data
+  const STATE_TAX = [
+    { name: 'Alabama', pct: 9.46 },
+    { name: 'Alaska', pct: 1.82 },
+    { name: 'Arizona', pct: 8.52 },
+    { name: 'Arkansas', pct: 9.46 },
+    { name: 'California', pct: 8.99 },
+    { name: 'Colorado', pct: 7.89 },
+    { name: 'Connecticut', pct: 6.35 },
+    { name: 'Delaware', pct: 0 },
+    { name: 'District of Columbia', pct: 6.0 },
+    { name: 'Florida', pct: 6.98 },
+    { name: 'Georgia', pct: 7.49 },
+    { name: 'Hawaii', pct: 4.5 },
+    { name: 'Idaho', pct: 6.03 },
+    { name: 'Illinois', pct: 8.96 },
+    { name: 'Indiana', pct: 7.0 },
+    { name: 'Iowa', pct: 6.94 },
+    { name: 'Kansas', pct: 8.69 },
+    { name: 'Kentucky', pct: 6.0 },
+    { name: 'Louisiana', pct: 10.11 },
+    { name: 'Maine', pct: 5.5 },
+    { name: 'Maryland', pct: 6.0 },
+    { name: 'Massachusetts', pct: 6.25 },
+    { name: 'Michigan', pct: 6.0 },
+    { name: 'Minnesota', pct: 8.14 },
+    { name: 'Mississippi', pct: 7.06 },
+    { name: 'Missouri', pct: 8.44 },
+    { name: 'Montana', pct: 0 },
+    { name: 'Nebraska', pct: 6.98 },
+    { name: 'Nevada', pct: 8.24 },
+    { name: 'New Hampshire', pct: 0 },
+    { name: 'New Jersey', pct: 6.6 },
+    { name: 'New Mexico', pct: 7.67 },
+    { name: 'New York', pct: 8.54 },
+    { name: 'North Carolina', pct: 7.0 },
+    { name: 'North Dakota', pct: 7.09 },
+    { name: 'Ohio', pct: 7.29 },
+    { name: 'Oklahoma', pct: 9.06 },
+    { name: 'Oregon', pct: 0 },
+    { name: 'Pennsylvania', pct: 6.34 },
+    { name: 'Rhode Island', pct: 7.0 },
+    { name: 'South Carolina', pct: 7.49 },
+    { name: 'South Dakota', pct: 6.11 },
+    { name: 'Tennessee', pct: 9.61 },
+    { name: 'Texas', pct: 8.2 },
+    { name: 'Utah', pct: 7.42 },
+    { name: 'Vermont', pct: 6.39 },
+    { name: 'Virginia', pct: 5.77 },
+    { name: 'Washington', pct: 9.51 },
+    { name: 'West Virginia', pct: 6.59 },
+    { name: 'Wisconsin', pct: 5.72 },
+    { name: 'Wyoming', pct: 5.56 },
+  ];
+
   const state = {
     step: 0,
     purchaseMode: 'buy',
@@ -62,6 +117,7 @@
     shipping: 'standard',
     warranty: 'none',
     warrantyOpen: false,
+    taxState: '',
     taxPct: AVG_SALES_TAX_PCT,
     discountMode: 'pct',
     discountPct: 0,
@@ -399,6 +455,7 @@
     el('discountToggleIcon').textContent = vals.discountOpen ? '−' : '+';
     el('discountCollapsedValue').textContent = (!vals.discountOpen && vals.discountAmount > 0) ? '-' + fmt(vals.discountAmount) : '';
     if (document.activeElement !== el('taxPctInput')) el('taxPctInput').value = vals.taxPctLabel;
+    el('taxStateSelect').value = state.taxState;
     syncDiscountModeUI(vals);
     const discountDisplayValue = vals.discountMode === 'dollar' ? vals.discountDollar : vals.discountPct;
     if (document.activeElement !== el('discountValueInput')) el('discountValueInput').value = discountDisplayValue;
@@ -521,7 +578,6 @@
       case 'setHomeGymTab': setState({ compareTab: 'homeGym' }); break;
       case 'setContactMethodEmail': setState({ contactMethod: 'email' }); break;
       case 'setContactMethodText': setState({ contactMethod: 'text' }); break;
-      case 'useAvgTax': setState({ taxPct: AVG_SALES_TAX_PCT }); break;
       case 'openInfoPage':
         INFO_PAGE_IDS.forEach((id) => { el(id).style.display = 'none'; });
         el(value + 'Page').style.display = 'block';
@@ -549,7 +605,23 @@
   el('taxPctInput').addEventListener('input', (e) => {
     const v = parseFloat(e.target.value);
     state.taxPct = Math.max(0, isNaN(v) ? 0 : v);
+    state.taxState = ''; // manual override clears the state selection
+    el('taxStateSelect').value = '';
     updateTaxDependent();
+  });
+
+  // populate state dropdown once
+  el('taxStateSelect').innerHTML =
+    '<option value="">Custom / U.S. average</option>' +
+    STATE_TAX.map((s) => `<option value="${s.name}">${s.name} — ${s.pct}%</option>`).join('');
+
+  el('taxStateSelect').addEventListener('change', (e) => {
+    const name = e.target.value;
+    const match = STATE_TAX.find((s) => s.name === name);
+    state.taxState = name;
+    state.taxPct = match ? match.pct : AVG_SALES_TAX_PCT;
+    updateTaxDependent();
+    el('taxPctInput').value = (Math.round(state.taxPct * 100) / 100).toString();
   });
 
   el('discountRange').addEventListener('input', (e) => {
