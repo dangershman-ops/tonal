@@ -81,10 +81,12 @@
               <span style="font-size:9.5px;font-weight:700;letter-spacing:.1em;color:#71fbbd;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:rgba(81,222,162,.1);border:1px solid rgba(81,222,162,.3)">Optional</span>
             </div>
             <div id="bundleList" style="margin-top:11px;display:flex;flex-direction:column;gap:10px"></div>
+            <button data-action="openInfoPage" data-value="accessories" style="all:unset;cursor:pointer;display:block;margin-top:9px;font-size:11px;font-weight:700;color:#51dea2">Click here to learn more about accessories →</button>
 
             <!-- shipping & installation (rep) -->
             <span style="display:block;margin-top:22px;font-size:10px;font-weight:700;letter-spacing:.14em;color:#86948a;text-transform:uppercase">Shipping &amp; installation</span>
             <div id="shippingList" style="margin-top:11px;display:flex;gap:10px"></div>
+            <button data-action="openInfoPage" data-value="installation" style="all:unset;cursor:pointer;display:block;margin-top:9px;font-size:11px;font-weight:700;color:#51dea2">Tonal installation requirements →</button>
 
             <!-- extended warranty, Tonal 2: always shown -->
             <div id="warrantySectionAlways">
@@ -93,6 +95,7 @@
                 <span style="font-size:9.5px;font-weight:700;letter-spacing:.1em;color:#71fbbd;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:rgba(81,222,162,.1);border:1px solid rgba(81,222,162,.3)">Optional</span>
               </div>
               <div id="warrantyListAlways" style="margin-top:11px;display:flex;flex-direction:column;gap:10px"></div>
+              <button data-action="openInfoPage" data-value="warranty" style="all:unset;cursor:pointer;display:block;margin-top:9px;font-size:11px;font-weight:700;color:#51dea2">Protect your Tonal with a 4 or 5 year extended warranty →</button>
             </div>
 
             <!-- extended warranty, Tonal 1: collapsible -->
@@ -103,6 +106,7 @@
               </button>
               <div id="warrantyControls" style="display:none;margin-top:11px">
                 <div id="warrantyListToggle" style="display:flex;flex-direction:column;gap:10px"></div>
+                <button data-action="openInfoPage" data-value="warranty" style="all:unset;cursor:pointer;display:block;margin-top:9px;font-size:11px;font-weight:700;color:#51dea2">Protect your Tonal with a 4 or 5 year extended warranty →</button>
               </div>
             </div>
 
@@ -111,7 +115,7 @@
               <div style="display:flex;align-items:center;justify-content:space-between">
                 <span style="font-size:10px;font-weight:700;letter-spacing:.14em;color:#86948a;text-transform:uppercase">SALES TAX</span>
                 <span style="display:flex;align-items:baseline">
-                  <input id="taxPctInput" type="number" inputmode="decimal" step="0.25" min="0" value="7" style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:26px;color:#51dea2;line-height:1;background:transparent;border:none;outline:none;text-align:right;width:64px">
+                  <input id="taxPctInput" type="number" inputmode="decimal" step="0.25" min="0" value="6.66" style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:26px;color:#51dea2;line-height:1;background:transparent;border:none;outline:none;text-align:right;width:64px">
                   <span style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:26px;color:#51dea2;line-height:1">%</span>
                 </span>
               </div>
@@ -389,6 +393,86 @@
           </section>
 
         </div>
+
+        <!-- ===================== INFO PAGE: ACCESSORIES ===================== -->
+        <div id="accessoriesPage" style="display:none;position:absolute;inset:0;background:linear-gradient(180deg,#0c1215 0%,#080c0e 100%);overflow-y:auto;padding:20px 26px 26px">
+          <button data-action="closeInfoPage" style="display:flex;align-items:center;gap:8px;background:transparent;border:none;color:#86948a;font-size:12.5px;font-weight:600;letter-spacing:.04em;padding:0;cursor:pointer">← Back</button>
+          <span style="display:block;margin-top:16px;font-size:10px;font-weight:600;letter-spacing:.18em;color:#51dea2;text-transform:uppercase">Optional add-on</span>
+          <h2 style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:28px;line-height:1.05;color:#f1f5f3;margin:8px 0 0">Smart Accessories</h2>
+          <p style="font-size:12.5px;color:#86948a;line-height:1.5;margin:9px 0 0">The Smart Accessories Bundle is required to unlock the best Tonal experience.</p>
+
+          <div style="margin-top:18px;display:flex;flex-direction:column;gap:14px">
+            <div style="display:flex;gap:10px;align-items:flex-start">
+              <span style="width:6px;height:6px;border-radius:50%;background:#51dea2;flex:none;margin-top:5px;box-shadow:0 0 8px #51dea2"></span>
+              <span style="font-size:12.5px;color:#bbcabf;line-height:1.5"><span style="color:#f1f5f3;font-weight:600">Smart Handles</span>: turn the adaptive weight on and off with the simple press of a button, and unlock a range of single-arm and two-arm moves.</span>
+            </div>
+            <div style="display:flex;gap:10px;align-items:flex-start">
+              <span style="width:6px;height:6px;border-radius:50%;background:#51dea2;flex:none;margin-top:5px;box-shadow:0 0 8px #51dea2"></span>
+              <span style="font-size:12.5px;color:#bbcabf;line-height:1.5"><span style="color:#f1f5f3;font-weight:600">Smart Bar</span>: turn the adaptive weight on and off with the simple press of a button, and unlock a range of bar-based moves like bench press and deadlifts.</span>
+            </div>
+            <div style="display:flex;gap:10px;align-items:flex-start">
+              <span style="width:6px;height:6px;border-radius:50%;background:#51dea2;flex:none;margin-top:5px;box-shadow:0 0 8px #51dea2"></span>
+              <span style="font-size:12.5px;color:#bbcabf;line-height:1.5"><span style="color:#f1f5f3;font-weight:600">Bar Control Module</span>: connects to Tonal over Bluetooth. Attach to the Smart Bar to turn weight on/off with a single button press.</span>
+            </div>
+            <div style="display:flex;gap:10px;align-items:flex-start">
+              <span style="width:6px;height:6px;border-radius:50%;background:#51dea2;flex:none;margin-top:5px;box-shadow:0 0 8px #51dea2"></span>
+              <span style="font-size:12.5px;color:#bbcabf;line-height:1.5"><span style="color:#f1f5f3;font-weight:600">Rope</span>: unlock a wide array of pushing and pulling exercises like triceps extensions, as well as heart-pumping Aero moves, with the brand-new rope, designed for a comfortable grip.</span>
+            </div>
+            <div style="display:flex;gap:10px;align-items:flex-start">
+              <span style="width:6px;height:6px;border-radius:50%;background:#51dea2;flex:none;margin-top:5px;box-shadow:0 0 8px #51dea2"></span>
+              <span style="font-size:12.5px;color:#bbcabf;line-height:1.5"><span style="color:#f1f5f3;font-weight:600">Bench</span>: unlock bench-based moves like bench press, lateral pull downs, and more.</span>
+            </div>
+            <div style="display:flex;gap:10px;align-items:flex-start">
+              <span style="width:6px;height:6px;border-radius:50%;background:#51dea2;flex:none;margin-top:5px;box-shadow:0 0 8px #51dea2"></span>
+              <span style="font-size:12.5px;color:#bbcabf;line-height:1.5"><span style="color:#f1f5f3;font-weight:600">Workout Mat</span>: enjoy additional comfort for yoga, floor exercises, and stretching.</span>
+            </div>
+            <div style="display:flex;gap:10px;align-items:flex-start">
+              <span style="width:6px;height:6px;border-radius:50%;background:#51dea2;flex:none;margin-top:5px;box-shadow:0 0 8px #51dea2"></span>
+              <span style="font-size:12.5px;color:#bbcabf;line-height:1.5"><span style="color:#f1f5f3;font-weight:600">Roller</span>: great for helping you recover.</span>
+            </div>
+          </div>
+
+          <a href="https://tonal.com/collections/accessories" target="_blank" rel="noopener" style="display:block;margin-top:22px;font-size:12px;font-weight:700;color:#51dea2;text-decoration:none">View the full accessories collection on tonal.com →</a>
+        </div>
+
+        <!-- ===================== INFO PAGE: WARRANTY ===================== -->
+        <div id="warrantyPage" style="display:none;position:absolute;inset:0;background:linear-gradient(180deg,#0c1215 0%,#080c0e 100%);overflow-y:auto;padding:20px 26px 26px">
+          <button data-action="closeInfoPage" style="display:flex;align-items:center;gap:8px;background:transparent;border:none;color:#86948a;font-size:12.5px;font-weight:600;letter-spacing:.04em;padding:0;cursor:pointer">← Back</button>
+          <span style="display:block;margin-top:16px;font-size:10px;font-weight:600;letter-spacing:.18em;color:#51dea2;text-transform:uppercase">Optional add-on</span>
+          <h2 style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:28px;line-height:1.05;color:#f1f5f3;margin:8px 0 0">Extended Warranty</h2>
+          <p style="font-size:12.5px;color:#86948a;line-height:1.5;margin:9px 0 0">Protect your Tonal with a 4 or 5 year extended warranty. Coverage beyond the standard manufacturer warranty, including accidental damage protection from day one. Enjoy peace of mind knowing your investment is covered.</p>
+
+          <div style="margin-top:18px;display:flex;flex-direction:column;gap:14px">
+            <div style="display:flex;gap:10px;align-items:flex-start">
+              <span style="width:6px;height:6px;border-radius:50%;background:#51dea2;flex:none;margin-top:5px;box-shadow:0 0 8px #51dea2"></span>
+              <span style="font-size:12.5px;color:#bbcabf;line-height:1.5"><span style="color:#f1f5f3;font-weight:600">Accidental Damage</span>: your Tonal is covered in case of accidental damage such as cracked screens or handles, plus mechanical and electrical failure after your manufacturer warranty expires.</span>
+            </div>
+            <div style="display:flex;gap:10px;align-items:flex-start">
+              <span style="width:6px;height:6px;border-radius:50%;background:#51dea2;flex:none;margin-top:5px;box-shadow:0 0 8px #51dea2"></span>
+              <span style="font-size:12.5px;color:#bbcabf;line-height:1.5"><span style="color:#f1f5f3;font-weight:600">Zero Deductible</span>: you'll never pay a deductible after purchasing your protection.</span>
+            </div>
+            <div style="display:flex;gap:10px;align-items:flex-start">
+              <span style="width:6px;height:6px;border-radius:50%;background:#51dea2;flex:none;margin-top:5px;box-shadow:0 0 8px #51dea2"></span>
+              <span style="font-size:12.5px;color:#bbcabf;line-height:1.5"><span style="color:#f1f5f3;font-weight:600">Repair or replacement</span>: if your Tonal cannot be repaired, it will be replaced.</span>
+            </div>
+          </div>
+
+          <p style="margin-top:18px;font-size:10.5px;color:#5d6a62;line-height:1.5">Limitations and exclusions apply. Read Extend's <a href="https://customers.extend.com/en-US/plan_details/A2-SGFIT-4y" target="_blank" rel="noopener" style="color:#86948a">terms and conditions</a>.</p>
+        </div>
+
+        <!-- ===================== INFO PAGE: INSTALLATION ===================== -->
+        <div id="installationPage" style="display:none;position:absolute;inset:0;background:linear-gradient(180deg,#0c1215 0%,#080c0e 100%);overflow-y:auto;padding:20px 26px 26px">
+          <button data-action="closeInfoPage" style="display:flex;align-items:center;gap:8px;background:transparent;border:none;color:#86948a;font-size:12.5px;font-weight:600;letter-spacing:.04em;padding:0;cursor:pointer">← Back</button>
+          <span style="display:block;margin-top:16px;font-size:10px;font-weight:600;letter-spacing:.18em;color:#51dea2;text-transform:uppercase">White glove delivery</span>
+          <h2 style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:28px;line-height:1.05;color:#f1f5f3;margin:8px 0 0">Professional installation</h2>
+          <p style="font-size:12.5px;color:#86948a;line-height:1.5;margin:9px 0 0">There's one less step between you and your first workout when our certified team of professional installers delivers, mounts, and sets up your Tonal for a safe and secure training experience.</p>
+
+          <img src="tonal-space.png" alt="Tonal wall-mounted footprint" style="margin-top:18px;width:100%;border-radius:14px;border:1px solid rgba(134,148,138,.2);display:block">
+          <span style="display:block;margin-top:8px;font-size:10.5px;color:#5d6a62;line-height:1.4">Wall-mounted footprint, about 7 ft × 7 ft of clear training space.</span>
+
+          <a href="https://tonal.com/pages/installation" target="_blank" rel="noopener" style="display:block;margin-top:22px;font-size:12px;font-weight:700;color:#51dea2;text-decoration:none">View full installation requirements on tonal.com →</a>
+        </div>
+
       </div>
 
     </div>
