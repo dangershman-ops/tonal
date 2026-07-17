@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=14">
+<link rel="stylesheet" href="styles.css?v=15">
 <script data-goatcounter="https://dang.goatcounter.com/count"
         async src="//gc.zgo.at/count.js"></script>
 </head>
@@ -261,7 +261,6 @@
               <div style="margin-top:16px;padding:12px 14px;border-radius:16px;background:rgba(23,28,31,.6);border:1px solid rgba(134,148,138,.16)">
                 <div style="display:flex;align-items:center;justify-content:space-between">
                   <span style="font-size:10px;font-weight:700;letter-spacing:.14em;color:#86948a;text-transform:uppercase">Who works out</span>
-                  <span id="householdLabel" style="font-size:12px;font-weight:600;color:#51dea2">Just me</span>
                 </div>
                 <div id="householdList" style="margin-top:10px;display:flex;gap:6px"></div>
               </div>
@@ -285,6 +284,8 @@
                   <span style="padding:6px 11px;border-radius:999px;border:1px solid rgba(81,222,162,.3);background:rgba(81,222,162,.07);color:#71fbbd;font-size:10.5px;font-weight:600">AI coaching tools</span>
                 </div>
               </div>
+
+              <button data-action="openInfoPage" data-value="membership" style="all:unset;cursor:pointer;display:block;margin-top:14px;font-size:11px;font-weight:700;color:#51dea2">Learn more about membership →</button>
             </div>
 
             <!-- TAB: HOME GYM -->
@@ -552,6 +553,33 @@
           <a href="https://tonal.com/pages/installation" target="_blank" rel="noopener" style="display:block;margin-top:22px;font-size:12px;font-weight:700;color:#51dea2;text-decoration:none">View full installation requirements on tonal.com →</a>
         </div>
 
+        <!-- ===================== INFO PAGE: MEMBERSHIP ===================== -->
+        <div id="membershipPage" style="display:none;position:absolute;inset:0;background:linear-gradient(180deg,#0c1215 0%,#080c0e 100%);overflow-y:auto;padding:20px 26px 26px">
+          <button data-action="closeInfoPage" style="display:flex;align-items:center;gap:8px;background:transparent;border:none;color:#86948a;font-size:12.5px;font-weight:600;letter-spacing:.04em;padding:0;cursor:pointer">← Back</button>
+          <span style="display:block;margin-top:16px;font-size:10px;font-weight:600;letter-spacing:.18em;color:#51dea2;text-transform:uppercase">Membership</span>
+          <h2 style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:28px;line-height:1.05;color:#f1f5f3;margin:8px 0 0">3,000+ expert-designed workouts and counting</h2>
+          <p style="font-size:12.5px;color:#86948a;line-height:1.5;margin:9px 0 0">From strength to mobility to heart-pumping Aero, Tonal workouts span over 15 categories and offer thousands of live and on-demand classes to keep you coming back, week after week.</p>
+          <p style="font-size:12.5px;color:#86948a;line-height:1.5;margin:9px 0 0">Plus, explore programs designed to help you hit specific goals like Build Muscle, Get Lean, or Improve Fitness.</p>
+
+          <!-- member vs non-member comparison -->
+          <div style="margin-top:20px;border-radius:16px;overflow:hidden;border:1px solid rgba(134,148,138,.16)">
+            <div style="display:flex;align-items:flex-end;padding:12px 14px;background:rgba(23,28,31,.9)">
+              <span style="flex:1;font-size:9px;font-weight:700;letter-spacing:.1em;color:#86948a;text-transform:uppercase">What you get</span>
+              <span style="flex:none;width:56px;text-align:center;font-size:9px;font-weight:700;letter-spacing:.04em;color:#51dea2;text-transform:uppercase;line-height:1.2">Tonal member</span>
+              <span style="flex:none;width:52px;text-align:center;font-size:9px;font-weight:700;letter-spacing:.04em;color:#86948a;text-transform:uppercase;line-height:1.2">Non member</span>
+            </div>
+            <div id="memberCompareRows"></div>
+          </div>
+
+          <!-- invest in your health -->
+          <div style="margin-top:20px;padding:18px 20px;border-radius:16px;background:linear-gradient(150deg,rgba(81,222,162,.12),rgba(23,28,31,.4));border:1px solid rgba(81,222,162,.26)">
+            <span style="display:block;font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:22px;color:#51dea2;line-height:1.05">Invest in your health for under $2/day*</span>
+            <span style="display:block;margin-top:8px;font-size:10.5px;color:#86948a;line-height:1.5">*$59.95/month plus applicable tax. 12-month initial commitment required.</span>
+          </div>
+
+          <a href="https://tonal.com/pages/membership" target="_blank" rel="noopener" style="display:block;margin-top:22px;font-size:12px;font-weight:700;color:#51dea2;text-decoration:none">Learn more about membership on tonal.com →</a>
+        </div>
+
       </div>
 
     </div>
@@ -562,6 +590,6 @@
   </div>
 </div>
 
-<script src="app.js?v=14"></script>
+<script src="app.js?v=15"></script>
 </body>
 </html>

@@ -55,7 +55,7 @@
   const SESS_RATE = 65;  // $/hr, NESTA certified
   const HOME_GYM_HIGH = 25000; // top of $7K-$25K range, RitFit
   const AVG_SALES_TAX_PCT = 6.66; // simple average of combined state+local rate, all 50 states, Tax Foundation Jan 2026 data
-  const INFO_PAGE_IDS = ['accessoriesPage', 'warrantyPage', 'installationPage'];
+  const INFO_PAGE_IDS = ['accessoriesPage', 'warrantyPage', 'installationPage', 'membershipPage'];
 
   // Combined state + avg local sales tax rate by state, Tax Foundation Jan 2026 data
   const STATE_TAX = [
@@ -500,7 +500,6 @@
 
     // ---- compare screen: membership tab ----
     el('membershipLabel').textContent = vals.membershipLabel;
-    el('householdLabel').textContent = vals.householdLabel;
     renderHouseholdList(vals);
     renderColumns('compareColumns', vals.columns);
     const callout = el('memSavesCallout');
@@ -674,6 +673,31 @@
     state.store = e.target.value;
     updateContactDependent(computeVals());
   });
+
+  // populate the membership member-vs-non-member comparison once
+  const MEMBER_FEATURES = [
+    { text: 'A full gym of equipment in a compact design with 280+ full-body moves', both: true },
+    { text: 'Digital weight up to 250 pounds', both: true },
+    { text: 'Optimal weight for every move, adjusts in one-pound increments as you get stronger', both: false },
+    { text: 'Automatic progress tracking to help you visualize your performance over time', both: false },
+    { text: 'Thousands of live and on-demand classes across 15 workout types, refreshed weekly', both: false },
+    { text: 'Multi-week programs designed by experts to help you get specific results', both: false },
+    { text: 'Build custom workouts that you can save, share, and automatically track', both: false },
+    { text: 'Safety features like having a spotter with you for every workout', both: false },
+    { text: 'Personalized coaching cues to help you dial in your form for better results', both: false },
+    { text: 'Dynamic weight modes replicate advanced lifting techniques to break through plateaus', both: false },
+    { text: 'Drop sets help build muscle up to 2x faster by gradually lowering weight until failure', both: false },
+  ];
+  el('memberCompareRows').innerHTML = MEMBER_FEATURES.map((f, i) => {
+    const yes = '<span style="color:#51dea2;font-weight:800">&#10003;</span>';
+    const no = '<span style="color:#3a4440">&mdash;</span>';
+    const rowBg = i % 2 === 0 ? 'rgba(255,255,255,.015)' : 'transparent';
+    return `<div style="display:flex;align-items:center;padding:11px 14px;background:${rowBg};border-top:1px solid rgba(134,148,138,.1)">
+      <span style="flex:1;font-size:11px;color:#bbcabf;line-height:1.4">${f.text}</span>
+      <span style="flex:none;width:56px;text-align:center;font-size:14px">${yes}</span>
+      <span style="flex:none;width:52px;text-align:center;font-size:14px">${f.both ? yes : no}</span>
+    </div>`;
+  }).join('');
 
   renderFull();
 })();
