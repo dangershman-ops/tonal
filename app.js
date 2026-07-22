@@ -171,6 +171,7 @@
       ? Math.min(discountDollar, trainerPrice)
       : trainerPrice * (discountPct / 100));
     const subtotal = (trainerPrice - discountAmount) + bundlePrice + shippingCost + warrantyPrice;
+    const subtotalNoShipping = (trainerPrice - discountAmount) + bundlePrice + warrantyPrice;
     const taxPct = s.taxPct;
     const taxAmount = subtotal * (taxPct / 100);
     const allIn = subtotal + taxAmount;
@@ -262,7 +263,7 @@
     const recapValue = isRent ? fmt(rentInfo.promo) + '/mo' : fmt(allIn);
     const logValue = isRent
       ? fmt(rentInfo.promo) + '/mo (first 3 months, then ' + fmt(rentInfo.regular) + '/mo)'
-      : fmt(subtotal);
+      : fmt(subtotalNoShipping);
 
     return {
       step: s.step,
@@ -270,6 +271,7 @@
       isTonal2,
       isTonal1: !isTonal2,
       allInLabel: fmt(allIn),
+      subtotal,
       subtotalLabel: fmt(subtotal),
       isRent,
       sendSummary,
@@ -484,6 +486,8 @@
     if (document.activeElement !== el('discountRange')) el('discountRange').value = discountDisplayValue;
     renderSummaryRows('summaryListPrice', vals.summary);
     el('allInTotalPrice').textContent = vals.allInLabel;
+    const financingLink = document.getElementById('financingLink');
+    if (financingLink) financingLink.href = 'financing.html?amount=' + Math.round(vals.subtotal);
     el('tonal1Compare').style.display = vals.isTonal1 ? 'block' : 'none';
 
     // ---- compare screen: buy vs rent view ----
@@ -568,6 +572,8 @@
     if (document.activeElement !== el('discountRange')) el('discountRange').value = discountDisplayValue;
     el('allInHero').textContent = vals.allInLabel;
     el('allInTotalPrice').textContent = vals.allInLabel;
+    const financingLink = document.getElementById('financingLink');
+    if (financingLink) financingLink.href = 'financing.html?amount=' + Math.round(vals.subtotal);
     renderSummaryRows('summaryListPrice', vals.summary);
     renderSendSummaryRows('summaryListSend', vals.sendSummary);
     el('recapAllIn').textContent = vals.recapValue;

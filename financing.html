@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Financing Estimator — Tonal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script data-goatcounter="https://dang.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{min-height:100vh;background:radial-gradient(ellipse 90% 55% at 12% -8%,rgba(81,222,162,.15) 0%,transparent 55%),radial-gradient(ellipse 65% 45% at 88% 2%,rgba(81,222,162,.08) 0%,transparent 50%),#090e11;font-family:'Inter',system-ui,sans-serif;color:#dfe3e7;-webkit-font-smoothing:antialiased;display:flex;align-items:flex-start;justify-content:center;padding:28px 20px 60px}
+.homelink{position:fixed;top:16px;left:18px;z-index:80;font-size:11px;font-weight:600;letter-spacing:.04em;color:#86948a;background:rgba(12,16,18,.72);border:1px solid rgba(134,148,138,.18);border-radius:999px;padding:7px 13px;text-decoration:none}
+.homelink:hover{color:#dfe3e7;border-color:rgba(81,222,162,.4)}
+.wrap{width:100%;max-width:480px;margin-top:20px}
+.eyebrow{font-size:10.5px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:#51dea2;margin-bottom:10px}
+h1{font-family:'Big Shoulders Display',sans-serif;font-weight:900;font-size:38px;line-height:1.05;color:#f1f5f3;margin:0 0 6px}
+.subtitle{font-size:13.5px;color:#86948a;line-height:1.55;margin:0 0 28px}
+
+/* Amount input */
+.amount-box{background:rgba(20,26,30,.8);border:1px solid rgba(134,148,138,.2);border-radius:16px;padding:20px 22px;margin-bottom:28px}
+.amount-label{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#86948a;margin-bottom:10px}
+.amount-row{display:flex;align-items:center;gap:10px}
+.dollar{font-family:'Big Shoulders Display',sans-serif;font-weight:900;font-size:36px;color:#51dea2}
+.amount-input{font-family:'Big Shoulders Display',sans-serif;font-weight:900;font-size:36px;color:#f1f5f3;background:transparent;border:none;outline:none;width:100%;min-width:0;caret-color:#51dea2}
+.amount-input:focus{color:#51dea2}
+/* hide number input arrows */
+.amount-input::-webkit-outer-spin-button,.amount-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.amount-input[type=number]{-moz-appearance:textfield}
+.edit-hint{font-size:11px;color:#4a5a52;margin-top:6px}
+
+/* Plan cards */
+.plans{display:flex;flex-direction:column;gap:14px;margin-bottom:28px}
+.plan{background:linear-gradient(145deg,rgba(23,29,33,.95),rgba(15,20,23,.97));border:1px solid rgba(134,148,138,.16);border-radius:18px;padding:20px 22px;transition:border-color .15s}
+.plan:hover{border-color:rgba(81,222,162,.35)}
+.plan-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.plan-monthly{font-family:'Big Shoulders Display',sans-serif;font-weight:900;font-size:30px;color:#f1f5f3}
+.plan-monthly span{font-family:'Inter',sans-serif;font-weight:500;font-size:13px;color:#86948a;margin-left:4px}
+.plan-badge{background:#51dea2;color:#041a0f;font-size:11px;font-weight:800;letter-spacing:.06em;border-radius:999px;padding:5px 13px}
+.plan-rows{display:flex;flex-direction:column;gap:6px}
+.plan-row{display:flex;justify-content:space-between;align-items:center;font-size:13px}
+.plan-row-label{color:#86948a}
+.plan-row-value{color:#c8d4cc;font-weight:600}
+.plan-row-value.zero{color:#51dea2}
+.divider{height:1px;background:rgba(134,148,138,.1);margin:10px 0}
+
+/* Disclaimer */
+.disclaimer{background:rgba(250,177,60,.06);border:1px solid rgba(250,177,60,.18);border-radius:14px;padding:18px 20px}
+.disclaimer-head{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#fbbf24;margin-bottom:10px}
+.disclaimer p{font-size:12px;color:#9aaa9e;line-height:1.65;margin:0 0 8px}
+.disclaimer p:last-child{margin:0}
+</style>
+</head>
+<body>
+
+<a href="index.html" class="homelink">← All tools</a>
+
+<div class="wrap">
+  <div class="eyebrow">Financing Estimator</div>
+  <h1>0% APR Payment Plans</h1>
+  <p class="subtitle">Estimate monthly payments based on Affirm 0% APR financing. Adjust the amount below to match your quote.</p>
+
+  <div class="amount-box">
+    <div class="amount-label">Purchase amount</div>
+    <div class="amount-row">
+      <div class="dollar">$</div>
+      <input class="amount-input" id="amountInput" type="number" min="1" max="99999" step="1" value="4295">
+    </div>
+    <div class="edit-hint">Tap to edit — or this auto-fills from your quote</div>
+  </div>
+
+  <div class="plans" id="plans">
+    <!-- rendered by JS -->
+  </div>
+
+  <div class="disclaimer">
+    <div class="disclaimer-head">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm0 3.5a.875.875 0 110 1.75A.875.875 0 018 4.5zm1 6.5H7v-4h2v4z" fill="#fbbf24"/></svg>
+      Estimator — Not an Official Offer
+    </div>
+    <p>These payment examples are estimates only, calculated as the purchase amount divided equally across the selected term at 0% APR. They are provided for illustrative purposes to help customers visualize potential costs.</p>
+    <p>Actual financing is subject to approval by Affirm. Eligibility, APR, and terms depend on the customer's credit profile and Affirm's underwriting criteria. Rates and terms shown here may not reflect what a specific customer qualifies for.</p>
+    <p>Do not present these figures as a guaranteed offer. Direct customers to affirm.com or the checkout flow to see their actual pre-qualified options.</p>
+  </div>
+</div>
+
+<script>
+const TERMS = [12, 24, 36];
+
+function fmt(n) {
+  return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function render(amount) {
+  const container = document.getElementById('plans');
+  if (!amount || amount <= 0) { container.innerHTML = ''; return; }
+  container.innerHTML = TERMS.map((mo, i) => {
+    const monthly = amount / mo;
+    const isFirst = i === 0;
+    return `
+    <div class="plan">
+      <div class="plan-top">
+        <div class="plan-monthly">$${fmt(monthly)}<span>/ mo</span></div>
+        <div class="plan-badge">${mo} months</div>
+      </div>
+      <div class="divider"></div>
+      <div class="plan-rows">
+        <div class="plan-row">
+          <div class="plan-row-label">APR</div>
+          <div class="plan-row-value zero">0.00%</div>
+        </div>
+        <div class="plan-row">
+          <div class="plan-row-label">Interest</div>
+          <div class="plan-row-value zero">$0.00</div>
+        </div>
+        <div class="plan-row">
+          <div class="plan-row-label">Total of payments</div>
+          <div class="plan-row-value">$${fmt(amount)}</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+const input = document.getElementById('amountInput');
+
+// Pre-populate from ?amount= URL param
+const params = new URLSearchParams(window.location.search);
+const paramAmount = parseFloat(params.get('amount'));
+if (paramAmount && paramAmount > 0) {
+  input.value = Math.round(paramAmount);
+}
+
+render(parseFloat(input.value) || 0);
+
+input.addEventListener('input', () => {
+  render(parseFloat(input.value) || 0);
+});
+</script>
+</body>
+</html>
