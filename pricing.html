@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>On-Trainer Pricing Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css?v=16">
+<script data-goatcounter="https://dang.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+<style>.homelink{position:fixed;top:16px;left:18px;z-index:80;font-size:11px;font-weight:600;letter-spacing:.04em;color:#86948a;background:rgba(12,16,18,.72);border:1px solid rgba(134,148,138,.18);border-radius:999px;padding:7px 13px;text-decoration:none}.homelink:hover{color:#dfe3e7;border-color:rgba(81,222,162,.4)}</style>
+</head>
+<body>
+
+<a href="index.html" class="homelink">← All tools</a>
+
+<div style="min-height:100vh;width:100%;display:flex;align-items:center;justify-content:center;padding:36px 20px;background:radial-gradient(1200px 640px at 10% -8%, rgba(81, 222, 162, 0.2), transparent 58%) fixed, radial-gradient(1000px 620px at 102% -2%, rgba(81, 222, 162, 0.11), transparent 54%), linear-gradient(rgb(11, 16, 19) 0%, rgb(7, 10, 12) 100%)">
+
+  <!-- ===================== TRAINER DEVICE ===================== -->
+  <div style="position:relative;width:560px;max-width:100%;border-radius:40px;padding:18px;background:linear-gradient(155deg,#1b2024 0%,#0c1012 100%);box-shadow:0 50px 130px rgba(0,0,0,.65), inset 0 1px 0 rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.06)">
+
+    <!-- screen -->
+    <div style="position:relative;width:100%;height:948px;border-radius:26px;overflow:hidden;background:linear-gradient(180deg,#0c1215 0%,#080c0e 100%);border:1px solid rgba(255,255,255,.05);display:flex;flex-direction:column">
+
+      <!-- screen ambient glow -->
+      <div style="position:absolute;top:-120px;right:-80px;width:340px;height:340px;border-radius:50%;background:radial-gradient(circle, rgba(81,222,162,.16), transparent 68%);pointer-events:none;animation:glowPulse 6s ease-in-out infinite"></div>
+
+      <!-- ----- top chrome ----- -->
+      <div style="position:relative;display:flex;align-items:center;justify-content:space-between;padding:18px 22px 12px;flex:none">
+        <img src="tonal-logo-white.png" alt="Tonal" style="height:15px;width:auto;opacity:.92">
+      </div>
+
+      <!-- ----- step rail ----- -->
+      <div style="position:relative;display:flex;align-items:center;gap:14px;padding:2px 24px 12px;flex:none">
+        <div data-action="goPrice" style="flex:1;display:flex;flex-direction:column;gap:7px;cursor:pointer">
+          <div id="stepPriceBar" style="height:3px;border-radius:3px;background:#51dea2"></div>
+          <span id="stepPriceColor" style="font-size:9px;font-weight:700;letter-spacing:.14em;color:#51dea2">PRICE</span>
+        </div>
+        <div data-action="goCompare" style="flex:1;display:flex;flex-direction:column;gap:7px;cursor:pointer">
+          <div id="stepCompareBar" style="height:3px;border-radius:3px;background:rgba(134,148,138,.22)"></div>
+          <span id="stepCompareColor" style="font-size:9px;font-weight:700;letter-spacing:.14em;color:#5d6a62">COMPARE</span>
+        </div>
+        <div data-action="goSend" style="flex:1;display:flex;flex-direction:column;gap:7px;cursor:pointer">
+          <div id="stepSendBar" style="height:3px;border-radius:3px;background:rgba(134,148,138,.22)"></div>
+          <span id="stepSendColor" style="font-size:9px;font-weight:700;letter-spacing:.14em;color:#5d6a62">SEND</span>
+        </div>
+      </div>
+
+      <!-- ===================== FLOW VIEWPORT ===================== -->
+      <div style="position:relative;flex:1;overflow:hidden">
+        <div id="track" style="display:flex;width:300%;height:100%;transition:transform .28s ease;transform:translateX(0%)">
+
+          <!-- ===================== PRICE SCREEN ===================== -->
+          <section class="noscroll" style="width:33.3333%;height:100%;overflow-y:auto;padding:16px 26px 26px;display:flex;flex-direction:column">
+
+            <!-- eyebrow + trainer switch -->
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+              <span style="font-size:10px;font-weight:600;letter-spacing:.18em;color:#51dea2;text-transform:uppercase">Your all-in price</span>
+              <button data-action="switchTrainer" style="margin-top:16px;width:auto;white-space:nowrap;height:32px;padding:0 14px;border-radius:999px;border:1px solid rgba(134,148,138,.24);background:rgba(255,255,255,.02);color:#dfe3e7;font-weight:700;font-size:14px;letter-spacing:.03em;display:flex;align-items:center;justify-content:center;gap:9px">
+                <span style="font-size:15px">⇆</span> <span id="switchLabel">Switch to Tonal 1</span>
+              </button>
+            </div>
+
+            <!-- buy / rent toggle -->
+            <div style="display:flex;border-radius:14px;border:1px solid rgba(134,148,138,.2);overflow:hidden;background:rgba(0,0,0,.2);margin-top:14px;flex:none">
+              <button data-action="setPurchaseModeBuy" id="buyModeBtn" style="flex:1;height:42px;border:none;font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase">Buy</button>
+              <button data-action="setPurchaseModeRent" id="rentModeBtn" style="flex:1;height:42px;border:none;font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase">Rent</button>
+            </div>
+
+            <!-- ============ BUY FLOW ============ -->
+            <div id="buyFlow">
+
+            <!-- hero all-in sticker -->
+            <div style="margin-top:26px;display:flex;align-items:flex-end;gap:10px">
+              <span id="allInHero" style="font-family:'Big Shoulders Display',sans-serif;font-weight:900;font-size:82px;line-height:.82;letter-spacing:-.01em;color:#f3fbff;height:75px">$0</span>
+              <span style="font-family:'Big Shoulders Display',sans-serif;font-weight:700;font-size:16px;line-height:1;color:#86948a;padding-bottom:12px;letter-spacing:.1em;text-transform:uppercase">all-in</span>
+            </div>
+
+            <!-- accessory bundle -->
+            <div style="margin-top:22px;display:flex;align-items:center;justify-content:space-between">
+              <span style="font-size:10px;font-weight:700;letter-spacing:.14em;color:#86948a;text-transform:uppercase">Accessories bundle</span>
+              <span style="font-size:9.5px;font-weight:700;letter-spacing:.1em;color:#71fbbd;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:rgba(81,222,162,.1);border:1px solid rgba(81,222,162,.3)">Optional</span>
+            </div>
+            <div id="bundleList" style="margin-top:11px;display:flex;flex-direction:column;gap:10px"></div>
+            <button data-action="openInfoPage" data-value="accessories" style="all:unset;cursor:pointer;display:block;margin-top:9px;font-size:11px;font-weight:700;color:#51dea2">Click here to learn more about accessories →</button>
+
+            <!-- shipping & installation (rep) -->
+            <span style="display:block;margin-top:22px;font-size:10px;font-weight:700;letter-spacing:.14em;color:#86948a;text-transform:uppercase">Shipping &amp; installation</span>
+            <div id="shippingList" style="margin-top:11px;display:flex;gap:10px"></div>
+            <button data-action="openInfoPage" data-value="installation" style="all:unset;cursor:pointer;display:block;margin-top:9px;font-size:11px;font-weight:700;color:#51dea2">Tonal installation requirements →</button>
+
+            <!-- extended warranty, Tonal 2: always shown -->
+            <div id="warrantySectionAlways">
+              <div style="margin-top:22px;display:flex;align-items:center;justify-content:space-between">
+                <span style="font-size:10px;font-weight:700;letter-spacing:.14em;color:#86948a;text-transform:uppercase">Extended warranty</span>
+                <span style="font-size:9.5px;font-weight:700;letter-spacing:.1em;color:#71fbbd;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:rgba(81,222,162,.1);border:1px solid rgba(81,222,162,.3)">Optional</span>
+              </div>
+              <div id="warrantyListAlways" style="margin-top:11px;display:flex;flex-direction:column;gap:10px"></div>
+              <button data-action="openInfoPage" data-value="warranty" style="all:unset;cursor:pointer;display:block;margin-top:9px;font-size:11px;font-weight:700;color:#51dea2">Protect your Tonal with a 4 or 5 year extended warranty →</button>
+            </div>
+
+            <!-- extended warranty, Tonal 1: collapsible -->
+            <div id="warrantySectionToggle" style="margin-top:22px;padding:16px 18px;border-radius:16px;background:rgba(23,28,31,.6);border:1px solid rgba(134,148,138,.16)">
+              <button data-action="toggleWarrantyOpen" style="all:unset;cursor:pointer;display:flex;align-items:center;justify-content:space-between;width:100%">
+                <span style="font-size:10px;font-weight:700;letter-spacing:.14em;color:#86948a;text-transform:uppercase"><span id="warrantyToggleIcon">+</span> Extended warranty</span>
+                <span id="warrantyCollapsedValue" style="font-family:'Big Shoulders Display',sans-serif;font-weight:700;font-size:15px;color:#51dea2"></span>
+              </button>
+              <div id="warrantyControls" style="display:none;margin-top:11px">
+                <div id="warrantyListToggle" style="display:flex;flex-direction:column;gap:10px"></div>
+                <button data-action="openInfoPage" data-value="warranty" style="all:unset;cursor:pointer;display:block;margin-top:9px;font-size:11px;font-weight:700;color:#51dea2">Protect your Tonal with a 4 or 5 year extended warranty →</button>
+              </div>
+            </div>
+
+            <!-- sales tax (rep) -->
+            <div style="margin-top:22px;padding:16px 18px;border-radius:16px;background:rgba(23,28,31,.6);border:1px solid rgba(134,148,138,.16)">
+              <div style="display:flex;align-items:center;justify-content:space-between">
+                <span style="font-size:10px;font-weight:700;letter-spacing:.14em;color:#86948a;text-transform:uppercase">State sales tax</span>
+                <span style="display:flex;align-items:baseline">
+                  <input id="taxPctInput" type="number" inputmode="decimal" step="0.25" min="0" value="6.66" style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:26px;color:#51dea2;line-height:1;background:transparent;border:none;outline:none;text-align:right;width:64px">
+                  <span style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:26px;color:#51dea2;line-height:1">%</span>
+                </span>
+              </div>
+              <select id="taxStateSelect" style="width:100%;height:42px;margin-top:12px;padding:0 14px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(134,148,138,.2);color:#f1f5f3;font-size:13px;font-weight:600"></select>
+              <span style="display:block;margin-top:8px;font-size:10.5px;color:#86948a;line-height:1.4">State tax rate only — does not include any additional municipal or county taxes that may apply.</span>
+            </div>
+
+            <!-- discount on trainer (collapsible, Tonal 2 only) -->
+            <div id="discountBlock" style="margin-top:16px;padding:16px 18px;border-radius:16px;background:rgba(23,28,31,.6);border:1px solid rgba(134,148,138,.16)">
+              <button data-action="toggleDiscountOpen" style="all:unset;cursor:pointer;display:flex;align-items:center;justify-content:space-between;width:100%">
+                <span style="font-size:10px;font-weight:700;letter-spacing:.14em;color:#86948a;text-transform:uppercase"><span id="discountToggleIcon">+</span> Discount on trainer</span>
+                <span id="discountCollapsedValue" style="font-family:'Big Shoulders Display',sans-serif;font-weight:700;font-size:15px;color:#51dea2"></span>
+              </button>
+              <div id="discountControls" style="display:none">
+                <div style="display:flex;align-items:center;justify-content:flex-end;margin-top:14px">
+                  <div style="display:flex;align-items:center;gap:10px">
+                    <div style="display:flex;border-radius:8px;border:1px solid rgba(134,148,138,.3);overflow:hidden">
+                      <button data-action="setDiscountModePct" id="discModePctBtn" style="width:26px;height:22px;border:none;font-size:11px;font-weight:700;cursor:pointer">%</button>
+                      <button data-action="setDiscountModeDollar" id="discModeDollarBtn" style="width:26px;height:22px;border:none;font-size:11px;font-weight:700;cursor:pointer">$</button>
+                    </div>
+                    <span style="display:flex;align-items:baseline">
+                      <span id="discountDollarPrefix" style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:26px;color:#51dea2;line-height:1;display:none">$</span>
+                      <input id="discountValueInput" type="number" inputmode="decimal" step="1" min="0" value="0" style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:26px;color:#51dea2;line-height:1;background:transparent;border:none;outline:none;text-align:right;width:64px">
+                      <span id="discountPctSuffix" style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:26px;color:#51dea2;line-height:1">%</span>
+                    </span>
+                  </div>
+                </div>
+                <input id="discountRange" type="range" min="0" max="30" step="1" value="0" style="width:100%;margin-top:14px;height:6px">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">
+                  <span id="discountMinLabel" style="font-size:10px;color:#5d6a62">0%</span>
+                  <span id="discountMaxLabel" style="font-size:10px;color:#5d6a62">30%</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- summary -->
+            <div style="margin-top:16px;padding:4px 18px;border-radius:16px;background:rgba(23,28,31,.6);border:1px solid rgba(134,148,138,.16)">
+              <div id="summaryListPrice"></div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:15px 0">
+                <span style="font-size:11px;font-weight:700;letter-spacing:.12em;color:#86948a;text-transform:uppercase">All-in total</span>
+                <span id="allInTotalPrice" style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:28px;color:#51dea2">$0</span>
+              </div>
+            </div>
+
+            <!-- tonal 1 vs 2 comparison -->
+            <div id="tonal1Compare" style="margin-top:16px;padding:16px 18px;border-radius:16px;background:rgba(23,28,31,.6);border:1px solid rgba(134,148,138,.16);display:none">
+              <span style="display:block;font-size:10px;font-weight:700;letter-spacing:.14em;color:#86948a;text-transform:uppercase">Tonal 1 · what you get</span>
+              <p style="margin:8px 0 0;font-size:11.5px;color:#bbcabf;line-height:1.5">Up to <span style="color:#f1f5f3;font-weight:600">200 lb</span> digital resistance in 1 lb increments · 24″ HD display · thousands of strength, cardio &amp; yoga workouts with real-time form feedback.</p>
+              <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(134,148,138,.14)">
+                <span style="display:block;font-size:10px;font-weight:700;letter-spacing:.14em;color:#51dea2;text-transform:uppercase">Step up to Tonal 2</span>
+                <div style="margin-top:11px;display:flex;flex-direction:column;gap:10px">
+                  <div style="display:flex;gap:10px;align-items:flex-start">
+                    <span style="width:6px;height:6px;border-radius:50%;background:#51dea2;flex:none;margin-top:5px;box-shadow:0 0 8px #51dea2"></span>
+                    <span style="font-size:11.5px;color:#bbcabf;line-height:1.45"><span style="color:#f1f5f3;font-weight:600">Up to 250 lb</span> resistance: 50 lb more headroom for heavy lifts, plus more precise adaptive weight.</span>
+                  </div>
+                  <div style="display:flex;gap:10px;align-items:flex-start">
+                    <span style="width:6px;height:6px;border-radius:50%;background:#51dea2;flex:none;margin-top:5px;box-shadow:0 0 8px #51dea2"></span>
+                    <span style="font-size:11.5px;color:#bbcabf;line-height:1.45"><span style="color:#f1f5f3;font-weight:600">Built-in Smart View</span>: the on-Tonal camera gives live form feedback.</span>
+                  </div>
+                  <div style="display:flex;gap:10px;align-items:flex-start">
+                    <span style="width:6px;height:6px;border-radius:50%;background:#51dea2;flex:none;margin-top:5px;box-shadow:0 0 8px #51dea2"></span>
+                    <span style="font-size:11.5px;color:#bbcabf;line-height:1.45"><span style="color:#f1f5f3;font-weight:600">Aero HIIT</span>: cardio + strength in one session, Tonal 2 only.</span>
+                  </div>
+                  <div style="display:flex;gap:10px;align-items:flex-start">
+                    <span style="width:6px;height:6px;border-radius:50%;background:#51dea2;flex:none;margin-top:5px;box-shadow:0 0 8px #51dea2"></span>
+                    <span style="font-size:11.5px;color:#bbcabf;line-height:1.45"><span style="color:#f1f5f3;font-weight:600">Smart Drop Sets</span>: auto-reduces weight as you fatigue to push past plateaus.</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- financing link -->
+            <a id="financingLink" href="financing.html?amount=4295" target="_blank" style="margin-top:16px;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 16px;border-radius:14px;background:linear-gradient(150deg,rgba(81,222,162,.07),rgba(23,28,31,.5));border:1px solid rgba(81,222,162,.22);text-decoration:none;transition:border-color .15s,background .15s">
+              <span style="display:flex;align-items:center;gap:10px">
+                <span style="width:7px;height:7px;border-radius:50%;background:#51dea2;flex:none;box-shadow:0 0 8px #51dea2"></span>
+                <span style="font-size:12px;color:#bbcabf;line-height:1.45">Prefer to pay monthly? <span style="color:#f1f5f3;font-weight:600">View 0% APR financing options</span></span>
+              </span>
+              <span style="font-size:12px;color:#51dea2;font-weight:700;white-space:nowrap">Estimate →</span>
+            </a>
+            <button data-action="goCompare" style="margin-top:16px;width:467px;max-width:100%;border-radius:999px;border:none;background:#51dea2;color:#051512;font-weight:700;letter-spacing:.03em;display:flex;align-items:center;justify-content:center;gap:10px;flex-grow:0;flex-shrink:0;font-size:18px;align-self:center;height:50px;position:static">Compare Cost <span style="font-size:17px">→</span></button>
+
+            </div>
+            <!-- ============ END BUY FLOW ============ -->
+
+            <!-- ============ RENT FLOW ============ -->
+            <div id="rentFlow" style="display:none;flex-direction:column">
+              <div style="margin-top:26px;padding:22px 20px;border-radius:18px;background:rgba(23,28,31,.6);border:1px solid rgba(134,148,138,.16)">
+                <span style="font-size:10px;font-weight:700;letter-spacing:.14em;color:#86948a;text-transform:uppercase">Rent <span id="rentTrainerName">Tonal 2</span></span>
+                <div style="margin-top:12px;display:flex;align-items:baseline;gap:8px">
+                  <span id="rentPromoPrice" style="font-family:'Big Shoulders Display',sans-serif;font-weight:900;font-size:56px;line-height:1;color:#51dea2">$219</span>
+                  <span style="font-size:13px;color:#86948a;line-height:1.3">/mo for the<br>first 3 months</span>
+                </div>
+                <p style="margin:14px 0 0;font-size:12.5px;color:#bbcabf;line-height:1.5">Regular monthly rate: <span id="rentRegularPrice" style="color:#dfe3e7;font-weight:600">$279</span>/mo. Save <span id="rentSavingsMo" style="color:#51dea2;font-weight:700">$60</span>/month, <span id="rentSavingsTotal" style="color:#51dea2;font-weight:700">$180</span> total.</p>
+                <p style="margin:12px 0 0;font-size:11.5px;color:#71fbbd;font-weight:700;letter-spacing:.02em">Includes membership subscription</p>
+              </div>
+
+              <!-- why rent -->
+              <div style="margin-top:16px;padding:16px 18px;border-radius:16px;background:rgba(23,28,31,.6);border:1px solid rgba(134,148,138,.16)">
+                <span style="display:block;font-size:10px;font-weight:700;letter-spacing:.14em;color:#51dea2;text-transform:uppercase">Why rent</span>
+                <div style="margin-top:12px;display:flex;flex-direction:column;gap:10px">
+                  <div style="display:flex;gap:10px;align-items:flex-start">
+                    <span style="width:6px;height:6px;border-radius:50%;background:#51dea2;flex:none;margin-top:5px;box-shadow:0 0 8px #51dea2"></span>
+                    <span style="font-size:11.5px;color:#bbcabf;line-height:1.45"><span style="color:#f1f5f3;font-weight:600">No long-term commitment</span>: cancel anytime.</span>
+                  </div>
+                  <div style="display:flex;gap:10px;align-items:flex-start">
+                    <span style="width:6px;height:6px;border-radius:50%;background:#51dea2;flex:none;margin-top:5px;box-shadow:0 0 8px #51dea2"></span>
+                    <span style="font-size:11.5px;color:#bbcabf;line-height:1.45"><span style="color:#f1f5f3;font-weight:600">No cancellation or shipping fees</span> to return the trainer.</span>
+                  </div>
+                  <div style="display:flex;gap:10px;align-items:flex-start">
+                    <span style="width:6px;height:6px;border-radius:50%;background:#51dea2;flex:none;margin-top:5px;box-shadow:0 0 8px #51dea2"></span>
+                    <span style="font-size:11.5px;color:#bbcabf;line-height:1.45"><span style="color:#f1f5f3;font-weight:600">Membership included</span>: ready to train from day one.</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- tonal image -->
+              <img src="tonal-space.png" alt="Tonal wall-mounted footprint" style="margin-top:16px;width:100%;border-radius:14px;border:1px solid rgba(134,148,138,.2);display:block">
+              <span style="display:block;margin-top:8px;font-size:10.5px;color:#5d6a62;line-height:1.4">Wall-mounted footprint, about 7 ft × 7 ft of clear training space.</span>
+
+              <p style="margin:16px 0 0;font-size:10px;color:#5d6a62;line-height:1.5">Available to new Tonal rental subscribers only. Limit one promotional offer per customer.</p>
+
+              <button data-action="goCompare" style="margin-top:16px;width:467px;max-width:100%;border-radius:999px;border:none;background:#51dea2;color:#051512;font-weight:700;letter-spacing:.03em;display:flex;align-items:center;justify-content:center;gap:10px;flex-grow:0;flex-shrink:0;font-size:18px;align-self:center;height:50px;position:static">Compare Cost <span style="font-size:17px">→</span></button>
+            </div>
+            <!-- ============ END RENT FLOW ============ -->
+
+          </section>
+
+          <!-- ===================== COMPARE SCREEN ===================== -->
+          <section class="noscroll" style="width:33.3333%;height:100%;overflow-y:auto;padding:16px 24px 24px;display:flex;flex-direction:column">
+
+            <!-- ============ COMPARE: BUY VIEW ============ -->
+            <div id="compareBuyView" style="display:flex;flex-direction:column;flex:1">
+
+            <!-- tab toggle -->
+            <div style="display:flex;border-radius:14px;border:1px solid rgba(134,148,138,.2);overflow:hidden;background:rgba(0,0,0,.2);flex:none">
+              <button data-action="setMembershipTab" id="memTabBtn" style="flex:1;height:46px;border:none;background:#51dea2;color:#051512;font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase">Membership</button>
+              <button data-action="setHomeGymTab" id="hgTabBtn" style="flex:1;height:46px;border:none;background:transparent;color:#86948a;font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase">Home Gym</button>
+            </div>
+
+            <!-- TAB: MEMBERSHIP -->
+            <div id="membershipTab" style="display:flex;flex-direction:column;flex:1">
+              <span style="font-size:10px;font-weight:600;letter-spacing:.18em;color:#51dea2;text-transform:uppercase;display:block;margin-top:16px">Monthly membership · whole household</span>
+              <h2 style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:27px;line-height:1.04;color:#f1f5f3;margin:8px 0 0">One flat price.<br>Everyone trains.</h2>
+              <p style="font-size:11.5px;color:#86948a;margin:7px 0 0;line-height:1.45"><span id="membershipLabel">$59.95</span>/mo covers the whole household. The trainer is purchased separately.</p>
+
+              <!-- household toggle -->
+              <div style="margin-top:16px;padding:12px 14px;border-radius:16px;background:rgba(23,28,31,.6);border:1px solid rgba(134,148,138,.16)">
+                <div style="display:flex;align-items:center;justify-content:space-between">
+                  <span style="font-size:10px;font-weight:700;letter-spacing:.14em;color:#86948a;text-transform:uppercase">Who works out</span>
+                </div>
+                <div id="householdList" style="margin-top:10px;display:flex;gap:6px"></div>
+              </div>
+
+              <!-- bars -->
+              <div id="compareColumns" style="margin-top:18px;flex:1;display:flex;gap:10px;align-items:flex-end;min-height:210px"></div>
+
+              <!-- callout -->
+              <div id="memSavesCallout" style="margin-top:14px;padding:13px 15px;border-radius:16px;display:flex;align-items:center;gap:12px">
+                <span id="memSavesLabel" style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:26px;line-height:1;white-space:nowrap">$0</span>
+                <span id="memSavesCopy" style="font-size:12px;color:#bbcabf;line-height:1.4"></span>
+              </div>
+
+              <!-- what membership includes -->
+              <div style="margin-top:12px">
+                <span style="display:block;font-size:9.5px;font-weight:700;letter-spacing:.14em;color:#86948a;text-transform:uppercase">Every membership includes</span>
+                <div style="margin-top:9px;display:flex;flex-wrap:wrap;gap:7px">
+                  <span style="padding:6px 11px;border-radius:999px;border:1px solid rgba(81,222,162,.3);background:rgba(81,222,162,.07);color:#71fbbd;font-size:10.5px;font-weight:600">Custom programs</span>
+                  <span style="padding:6px 11px;border-radius:999px;border:1px solid rgba(81,222,162,.3);background:rgba(81,222,162,.07);color:#71fbbd;font-size:10.5px;font-weight:600">Weight calibration</span>
+                  <span style="padding:6px 11px;border-radius:999px;border:1px solid rgba(81,222,162,.3);background:rgba(81,222,162,.07);color:#71fbbd;font-size:10.5px;font-weight:600">Spotter Mode</span>
+                  <span style="padding:6px 11px;border-radius:999px;border:1px solid rgba(81,222,162,.3);background:rgba(81,222,162,.07);color:#71fbbd;font-size:10.5px;font-weight:600">AI coaching tools</span>
+                </div>
+              </div>
+
+              <button data-action="openInfoPage" data-value="membership" style="all:unset;cursor:pointer;display:block;margin-top:14px;font-size:11px;font-weight:700;color:#51dea2">Learn more about membership →</button>
+            </div>
+
+            <!-- TAB: HOME GYM -->
+            <div id="homeGymTab" style="display:none;flex-direction:column;flex:1">
+              <span style="font-size:10px;font-weight:600;letter-spacing:.18em;color:#51dea2;text-transform:uppercase;display:block;margin-top:16px">One-time purchase · sticker price</span>
+              <h2 style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:27px;line-height:1.04;color:#f1f5f3;margin:8px 0 0">The math on<br>the sticker.</h2>
+              <p style="font-size:11.5px;color:#86948a;margin:7px 0 0;line-height:1.45">Tonal all-in vs a comparable cable tower + rack + dumbbell setup.</p>
+
+              <div id="homeGymBars" style="margin-top:18px;flex:1;display:flex;gap:16px;align-items:flex-end;min-height:250px"></div>
+
+              <div style="margin-top:16px;padding:14px 16px;border-radius:16px;background:linear-gradient(150deg,rgba(81,222,162,.12),rgba(23,28,31,.4));border:1px solid rgba(81,222,162,.26)">
+                <span style="display:block;font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:20px;color:#51dea2;line-height:1">All-in-one. No hassle.</span>
+                <span style="display:block;font-size:12px;color:#bbcabf;line-height:1.45;margin-top:6px">One machine does the work of a full rack, cables, dumbbells &amp; bench. Nothing to assemble, no clutter, and it's genuinely easy to use.</span>
+              </div>
+
+              <div style="margin-top:10px;padding:12px 14px;border-radius:14px;background:rgba(23,28,31,.6);border:1px solid rgba(134,148,138,.16);display:flex;align-items:flex-start;gap:10px">
+                <span style="width:7px;height:7px;border-radius:50%;background:#51dea2;flex:none;margin-top:4px;box-shadow:0 0 8px #51dea2"></span>
+                <span style="font-size:11.5px;color:#bbcabf;line-height:1.5">Get the expertise of a personal trainer and a full gym in your home for a fraction of the price!</span>
+              </div>
+            </div>
+
+            </div>
+            <!-- ============ END COMPARE: BUY VIEW ============ -->
+
+            <!-- ============ COMPARE: RENT VIEW ============ -->
+            <div id="compareRentView" style="display:none;flex-direction:column;flex:1">
+              <span style="font-size:10px;font-weight:600;letter-spacing:.18em;color:#51dea2;text-transform:uppercase;display:block;margin-top:16px">Monthly rent · vs personal training</span>
+              <h2 style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:27px;line-height:1.04;color:#f1f5f3;margin:8px 0 0">Train for less<br>than a trainer.</h2>
+              <p style="font-size:11.5px;color:#86948a;margin:7px 0 0;line-height:1.45">Renting <span id="rentCompareTrainerName">Tonal 2</span> at <span id="rentCompareMoLabel">$219</span>/mo (first 3 months) includes your membership, with no separate trainer fees.</p>
+
+              <div id="rentCompareColumns" style="margin-top:22px;flex:1;display:flex;gap:10px;align-items:flex-end;min-height:210px"></div>
+
+              <div id="rentSavesCallout" style="margin-top:14px;padding:13px 15px;border-radius:16px;display:flex;align-items:center;gap:12px">
+                <span id="rentSavesLabel" style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:26px;line-height:1;white-space:nowrap">$0</span>
+                <span id="rentSavesCopy" style="font-size:12px;color:#bbcabf;line-height:1.4"></span>
+              </div>
+            </div>
+            <!-- ============ END COMPARE: RENT VIEW ============ -->
+
+            <!-- nav -->
+            <div style="display:flex;gap:12px;margin-top:16px;flex:none">
+              <button data-action="goPrice" style="flex:none;width:52px;height:56px;border-radius:999px;border:1px solid rgba(134,148,138,.24);background:transparent;color:#bbcabf;font-size:20px">←</button>
+              <button data-action="goSend" style="flex:1;height:56px;border-radius:999px;border:none;background:#51dea2;color:#051512;font-weight:700;font-size:14px;letter-spacing:.03em;display:flex;align-items:center;justify-content:center;gap:9px">Email me this quote <span style="font-size:16px">→</span></button>
+            </div>
+
+          </section>
+
+          <!-- ===================== SEND SCREEN ===================== -->
+          <section class="noscroll" style="width:33.3333%;height:100%;overflow-y:auto;padding:20px 26px 24px;display:flex;flex-direction:column">
+
+            <!-- NOT SENT -->
+            <div id="notSentPanel" style="display:flex;flex-direction:column;height:100%">
+              <span style="font-size:10px;font-weight:600;letter-spacing:.18em;color:#51dea2;text-transform:uppercase">Take it home</span>
+              <h2 style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:30px;line-height:1.03;color:#f1f5f3;margin:9px 0 0">Want your quote<br><span id="contactMethodHeadline">emailed</span>?</h2>
+              <p style="font-size:12.5px;color:#86948a;line-height:1.5;margin:9px 0 0">Your full quote: model, what's included, and pricing, <span id="contactMethodCopy">straight to your inbox</span>.</p>
+
+              <!-- contact method toggle -->
+              <div style="display:flex;border-radius:14px;border:1px solid rgba(134,148,138,.2);overflow:hidden;background:rgba(0,0,0,.2);margin-top:14px;flex:none">
+                <button data-action="setContactMethodEmail" id="contactMethodEmailBtn" style="flex:1;height:40px;border:none;font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase">Email</button>
+                <button data-action="setContactMethodText" id="contactMethodTextBtn" style="flex:1;height:40px;border:none;font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase">Text</button>
+              </div>
+
+              <!-- tonal image -->
+              <img src="tonal-space.png" alt="Tonal wall-mounted footprint" style="margin-top:16px;width:100%;border-radius:14px;border:1px solid rgba(134,148,138,.2);display:block">
+              <span style="display:block;margin-top:8px;font-size:10.5px;color:#5d6a62;line-height:1.4">Wall-mounted footprint, about 7 ft × 7 ft of clear training space.</span>
+
+              <!-- recap -->
+              <div style="margin-top:16px;padding:4px 18px;border-radius:16px;background:rgba(23,28,31,.7);border:1px solid rgba(134,148,138,.16)">
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid rgba(134,148,138,.14)">
+                  <span style="font-size:11px;font-weight:700;letter-spacing:.12em;color:#86948a;text-transform:uppercase">Your <span id="recapTrainerName">Tonal 2</span> quote</span>
+                  <span id="recapAllIn" style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:22px;color:#51dea2">$0</span>
+                </div>
+                <div id="summaryListSend"></div>
+              </div>
+
+              <!-- store -->
+              <div style="margin-top:16px">
+                <span style="display:block;font-size:10px;font-weight:700;letter-spacing:.14em;color:#86948a;text-transform:uppercase;margin-bottom:8px">Store</span>
+                <select id="storeSelect" style="width:100%;height:48px;padding:0 18px;border-radius:999px;background:rgba(255,255,255,.03);border:1px solid rgba(134,148,138,.2);color:#f1f5f3;font-size:14px;font-weight:600">
+                  <option value="">Select store</option>
+                  <option value="Bellevue">Bellevue</option>
+                  <option value="Short Hills">Short Hills</option>
+                  <option value="Old Orchard">Old Orchard</option>
+                  <option value="Century City">Century City</option>
+                  <option value="North Park">North Park</option>
+                  <option value="Perimeter (Atlanta)">Perimeter (Atlanta)</option>
+                </select>
+              </div>
+
+              <!-- contact input -->
+              <div id="emailWrap" style="margin-top:18px;display:flex;align-items:center;gap:10px;padding:6px 6px 6px 18px;border-radius:999px;background:rgba(255,255,255,.03);border:1px solid rgba(134,148,138,.2)">
+                <input id="emailInput" placeholder="name@email.com" inputmode="email" style="flex:1;min-width:0;background:transparent;border:none;color:#f1f5f3;font-size:15px">
+                <button id="sendBtn" data-action="sendQuote" disabled style="flex:none;height:48px;padding:0 24px;border-radius:999px;border:none;background:#2b3a33;color:#051512;font-weight:700;font-size:14px;letter-spacing:.03em;opacity:.5">Send</button>
+              </div>
+
+              <button data-action="goCompare" style="margin-top:auto;align-self:flex-start;padding:12px 0;background:transparent;border:none;color:#86948a;font-size:12.5px;font-weight:600;letter-spacing:.04em">← Back to comparison</button>
+            </div>
+
+            <!-- SENT -->
+            <div id="sentPanel" style="display:none;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center">
+              <div style="width:84px;height:84px;border-radius:50%;background:linear-gradient(150deg,rgba(81,222,162,.22),rgba(81,222,162,.06));border:1px solid rgba(81,222,162,.4);display:flex;align-items:center;justify-content:center;box-shadow:0 0 40px rgba(81,222,162,.25)">
+                <span style="font-size:40px;color:#51dea2;line-height:1">✓</span>
+              </div>
+              <h2 style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:32px;color:#f1f5f3;margin:22px 0 0">Quote sent.</h2>
+              <p style="font-size:14px;color:#bbcabf;line-height:1.55;margin:12px 0 0;max-width:32ch">Your <span id="sentTrainerName">Tonal 2</span> quote is on its way to <span id="sentEmail" style="color:#dfe3e7;font-weight:600"></span>.</p>
+              <button data-action="restart" style="margin-top:28px;height:52px;padding:0 30px;border-radius:999px;border:1px solid rgba(134,148,138,.24);background:transparent;color:#bbcabf;font-weight:600;font-size:14px;letter-spacing:.04em">Start a new quote</button>
+            </div>
+
+          </section>
+
+        </div>
+
+        <!-- ===================== INFO PAGE: ACCESSORIES ===================== -->
+        <div id="accessoriesPage" style="display:none;position:absolute;inset:0;background:linear-gradient(180deg,#0c1215 0%,#080c0e 100%);overflow-y:auto;padding:20px 26px 26px">
+          <button data-action="closeInfoPage" style="display:flex;align-items:center;gap:8px;background:transparent;border:none;color:#86948a;font-size:12.5px;font-weight:600;letter-spacing:.04em;padding:0;cursor:pointer">← Back</button>
+          <span style="display:block;margin-top:16px;font-size:10px;font-weight:600;letter-spacing:.18em;color:#51dea2;text-transform:uppercase">Optional add-on</span>
+          <h2 style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:28px;line-height:1.05;color:#f1f5f3;margin:8px 0 0">Smart Accessories</h2>
+          <p style="font-size:12.5px;color:#86948a;line-height:1.5;margin:9px 0 0">The Smart Accessories Bundle is required to unlock the best Tonal experience. Tap a bundle below to see everything it includes.</p>
+
+          <!-- ultimate recommendation highlight -->
+          <div style="margin-top:16px;padding:14px 16px;border-radius:16px;background:linear-gradient(150deg,rgba(81,222,162,.14),rgba(23,28,31,.4));border:1px solid rgba(81,222,162,.34);display:flex;align-items:flex-start;gap:10px">
+            <span style="flex:none;font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#051512;background:#51dea2;padding:4px 8px;border-radius:999px;margin-top:1px">Best value</span>
+            <span style="font-size:12px;color:#bbcabf;line-height:1.5">We recommend <span style="color:#f1f5f3;font-weight:700">Ultimate</span>: for just $100 more it adds Pilates loops and ankle straps, unlocking 320+ exercises and the deepest savings (27% off).</span>
+          </div>
+
+          <!-- ESSENTIAL dropdown -->
+          <details class="acc" style="margin-top:16px;padding:16px 18px;border-radius:16px;background:rgba(23,28,31,.6);border:1px solid rgba(134,148,138,.16)">
+            <summary style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+              <span>
+                <span style="font-size:14px;font-weight:700;color:#f1f5f3">Essential Accessories</span>
+                <span style="display:block;font-size:10.5px;color:#86948a;margin-top:2px">7 accessories · 285+ movements · 25% bundle savings</span>
+              </span>
+              <span style="display:flex;align-items:center;gap:10px;flex:none">
+                <span style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:20px;color:#51dea2">$495</span>
+                <span class="chev" style="color:#86948a;font-size:11px">▼</span>
+              </span>
+            </summary>
+            <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(134,148,138,.14);display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;gap:10px;align-items:flex-start"><span style="width:6px;height:6px;border-radius:50%;background:#51dea2;flex:none;margin-top:5px;box-shadow:0 0 8px #51dea2"></span><span style="font-size:12px;color:#bbcabf;line-height:1.5">Required to unlock <span style="color:#f1f5f3;font-weight:600">285+ movements</span> across upper body, lower body, and core.</span></div>
+              <div style="display:flex;gap:10px;align-items:flex-start"><span style="width:6px;height:6px;border-radius:50%;background:#51dea2;flex:none;margin-top:5px;box-shadow:0 0 8px #51dea2"></span><span style="font-size:12px;color:#bbcabf;line-height:1.5">Includes <span style="color:#f1f5f3;font-weight:600">7 accessories</span>.</span></div>
+              <div style="display:flex;gap:10px;align-items:flex-start"><span style="width:6px;height:6px;border-radius:50%;background:#51dea2;flex:none;margin-top:5px;box-shadow:0 0 8px #51dea2"></span><span style="font-size:12px;color:#bbcabf;line-height:1.5"><span style="color:#f1f5f3;font-weight:600">25% savings</span> when you buy as a bundle.</span></div>
+            </div>
+            <div style="margin-top:12px;display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;gap:10px;align-items:flex-start"><span style="width:6px;height:6px;border-radius:50%;background:#5d6a62;flex:none;margin-top:5px"></span><span style="font-size:12px;color:#bbcabf;line-height:1.5"><span style="color:#f1f5f3;font-weight:600">Smart Handles</span>: turn the adaptive weight on and off with the simple press of a button, and unlock a range of single-arm and two-arm moves.</span></div>
+              <div style="display:flex;gap:10px;align-items:flex-start"><span style="width:6px;height:6px;border-radius:50%;background:#5d6a62;flex:none;margin-top:5px"></span><span style="font-size:12px;color:#bbcabf;line-height:1.5"><span style="color:#f1f5f3;font-weight:600">Smart Bar</span>: turn the adaptive weight on and off with the simple press of a button, and unlock a range of bar-based moves like bench press and deadlifts.</span></div>
+              <div style="display:flex;gap:10px;align-items:flex-start"><span style="width:6px;height:6px;border-radius:50%;background:#5d6a62;flex:none;margin-top:5px"></span><span style="font-size:12px;color:#bbcabf;line-height:1.5"><span style="color:#f1f5f3;font-weight:600">Bar Control Module</span>: connects to Tonal over Bluetooth. Attach to the Smart Bar to turn weight on/off with a single button press.</span></div>
+              <div style="display:flex;gap:10px;align-items:flex-start"><span style="width:6px;height:6px;border-radius:50%;background:#5d6a62;flex:none;margin-top:5px"></span><span style="font-size:12px;color:#bbcabf;line-height:1.5"><span style="color:#f1f5f3;font-weight:600">Rope</span>: unlock a wide array of pushing and pulling exercises like triceps extensions, as well as heart-pumping Aero moves, with the brand-new rope, designed for a comfortable grip.</span></div>
+              <div style="display:flex;gap:10px;align-items:flex-start"><span style="width:6px;height:6px;border-radius:50%;background:#5d6a62;flex:none;margin-top:5px"></span><span style="font-size:12px;color:#bbcabf;line-height:1.5"><span style="color:#f1f5f3;font-weight:600">Bench</span>: unlock bench-based moves like bench press, lateral pull downs, and more.</span></div>
+              <div style="display:flex;gap:10px;align-items:flex-start"><span style="width:6px;height:6px;border-radius:50%;background:#5d6a62;flex:none;margin-top:5px"></span><span style="font-size:12px;color:#bbcabf;line-height:1.5"><span style="color:#f1f5f3;font-weight:600">Workout Mat</span>: enjoy additional comfort for yoga, floor exercises, and stretching.</span></div>
+              <div style="display:flex;gap:10px;align-items:flex-start"><span style="width:6px;height:6px;border-radius:50%;background:#5d6a62;flex:none;margin-top:5px"></span><span style="font-size:12px;color:#bbcabf;line-height:1.5"><span style="color:#f1f5f3;font-weight:600">Roller</span>: great for helping you recover.</span></div>
+            </div>
+          </details>
+
+          <!-- ULTIMATE dropdown -->
+          <details class="acc" open style="margin-top:12px;padding:16px 18px;border-radius:16px;background:linear-gradient(150deg,rgba(81,222,162,.07),rgba(23,28,31,.5));border:1px solid rgba(81,222,162,.3)">
+            <summary style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+              <span>
+                <span style="font-size:14px;font-weight:700;color:#f1f5f3">Ultimate Accessories <span style="font-size:9px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#051512;background:#51dea2;padding:2px 7px;border-radius:999px;vertical-align:middle;margin-left:4px">Recommended</span></span>
+                <span style="display:block;font-size:10.5px;color:#86948a;margin-top:2px">9 accessories · 320+ exercises · 27% bundle savings</span>
+              </span>
+              <span style="display:flex;align-items:center;gap:10px;flex:none">
+                <span style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:20px;color:#51dea2">$595</span>
+                <span class="chev" style="color:#86948a;font-size:11px">▼</span>
+              </span>
+            </summary>
+            <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(81,222,162,.18);display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;gap:10px;align-items:flex-start"><span style="width:6px;height:6px;border-radius:50%;background:#51dea2;flex:none;margin-top:5px;box-shadow:0 0 8px #51dea2"></span><span style="font-size:12px;color:#bbcabf;line-height:1.5">Required for Pilates loops and ankle strap movements, and <span style="color:#f1f5f3;font-weight:600">320+ exercises</span> across upper, lower, and core.</span></div>
+              <div style="display:flex;gap:10px;align-items:flex-start"><span style="width:6px;height:6px;border-radius:50%;background:#51dea2;flex:none;margin-top:5px;box-shadow:0 0 8px #51dea2"></span><span style="font-size:12px;color:#bbcabf;line-height:1.5">Includes <span style="color:#f1f5f3;font-weight:600">9 accessories</span>.</span></div>
+              <div style="display:flex;gap:10px;align-items:flex-start"><span style="width:6px;height:6px;border-radius:50%;background:#51dea2;flex:none;margin-top:5px;box-shadow:0 0 8px #51dea2"></span><span style="font-size:12px;color:#bbcabf;line-height:1.5"><span style="color:#f1f5f3;font-weight:600">27% savings</span> when you buy as a bundle. Unlock all that Tonal has to offer.</span></div>
+            </div>
+            <div style="margin-top:12px;display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;gap:10px;align-items:flex-start"><span style="width:6px;height:6px;border-radius:50%;background:#5d6a62;flex:none;margin-top:5px"></span><span style="font-size:12px;color:#bbcabf;line-height:1.5"><span style="color:#f1f5f3;font-weight:600">Smart Handles</span>: turn the adaptive weight on and off with the simple press of a button, and unlock a range of single-arm and two-arm moves.</span></div>
+              <div style="display:flex;gap:10px;align-items:flex-start"><span style="width:6px;height:6px;border-radius:50%;background:#5d6a62;flex:none;margin-top:5px"></span><span style="font-size:12px;color:#bbcabf;line-height:1.5"><span style="color:#f1f5f3;font-weight:600">Smart Bar</span>: turn the adaptive weight on and off with the simple press of a button, and unlock a range of bar-based moves like bench press and deadlifts.</span></div>
+              <div style="display:flex;gap:10px;align-items:flex-start"><span style="width:6px;height:6px;border-radius:50%;background:#5d6a62;flex:none;margin-top:5px"></span><span style="font-size:12px;color:#bbcabf;line-height:1.5"><span style="color:#f1f5f3;font-weight:600">Bar Control Module</span>: connects to Tonal over Bluetooth. Attach to the Smart Bar to turn weight on/off with a single button press.</span></div>
+              <div style="display:flex;gap:10px;align-items:flex-start"><span style="width:6px;height:6px;border-radius:50%;background:#5d6a62;flex:none;margin-top:5px"></span><span style="font-size:12px;color:#bbcabf;line-height:1.5"><span style="color:#f1f5f3;font-weight:600">Rope</span>: unlock a wide array of pushing and pulling exercises like triceps extensions, as well as heart-pumping Aero moves, with the brand-new rope, designed for a comfortable grip.</span></div>
+              <div style="display:flex;gap:10px;align-items:flex-start"><span style="width:6px;height:6px;border-radius:50%;background:#5d6a62;flex:none;margin-top:5px"></span><span style="font-size:12px;color:#bbcabf;line-height:1.5"><span style="color:#f1f5f3;font-weight:600">Bench</span>: unlock bench-based moves like bench press, lateral pull downs, and more.</span></div>
+              <div style="display:flex;gap:10px;align-items:flex-start"><span style="width:6px;height:6px;border-radius:50%;background:#5d6a62;flex:none;margin-top:5px"></span><span style="font-size:12px;color:#bbcabf;line-height:1.5"><span style="color:#f1f5f3;font-weight:600">Workout Mat</span>: enjoy additional comfort for yoga, floor exercises, and stretching.</span></div>
+              <div style="display:flex;gap:10px;align-items:flex-start"><span style="width:6px;height:6px;border-radius:50%;background:#5d6a62;flex:none;margin-top:5px"></span><span style="font-size:12px;color:#bbcabf;line-height:1.5"><span style="color:#f1f5f3;font-weight:600">Roller</span>: great for helping you recover.</span></div>
+              <div style="display:flex;gap:10px;align-items:flex-start"><span style="width:6px;height:6px;border-radius:50%;background:#51dea2;flex:none;margin-top:5px;box-shadow:0 0 8px #51dea2"></span><span style="font-size:12px;color:#bbcabf;line-height:1.5"><span style="color:#f1f5f3;font-weight:600">Pilates Loops</span>: unlock the Pilates experience; a variety of movements and guided workouts designed to deepen mobility, core strength and muscle definition.</span></div>
+              <div style="display:flex;gap:10px;align-items:flex-start"><span style="width:6px;height:6px;border-radius:50%;background:#51dea2;flex:none;margin-top:5px;box-shadow:0 0 8px #51dea2"></span><span style="font-size:12px;color:#bbcabf;line-height:1.5"><span style="color:#f1f5f3;font-weight:600">Ankle Straps</span>: sculpt, tone, and strengthen your lower body like never before with a variety of moves that target your glutes, hamstrings, and abductors with incredible precision.</span></div>
+            </div>
+          </details>
+
+          <a href="https://tonal.com/collections/accessories" target="_blank" rel="noopener" style="display:block;margin-top:22px;font-size:12px;font-weight:700;color:#51dea2;text-decoration:none">View the full accessories collection on tonal.com →</a>
+        </div>
+
+        <!-- ===================== INFO PAGE: WARRANTY ===================== -->
+        <div id="warrantyPage" style="display:none;position:absolute;inset:0;background:linear-gradient(180deg,#0c1215 0%,#080c0e 100%);overflow-y:auto;padding:20px 26px 26px">
+          <button data-action="closeInfoPage" style="display:flex;align-items:center;gap:8px;background:transparent;border:none;color:#86948a;font-size:12.5px;font-weight:600;letter-spacing:.04em;padding:0;cursor:pointer">← Back</button>
+          <span style="display:block;margin-top:16px;font-size:10px;font-weight:600;letter-spacing:.18em;color:#51dea2;text-transform:uppercase">Optional add-on</span>
+          <h2 style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:28px;line-height:1.05;color:#f1f5f3;margin:8px 0 0">Extended Warranty</h2>
+          <p style="font-size:12.5px;color:#86948a;line-height:1.5;margin:9px 0 0">Protect your Tonal with a 4 or 5 year extended warranty. Coverage beyond the standard manufacturer warranty, including accidental damage protection from day one. Enjoy peace of mind knowing your investment is covered.</p>
+
+          <div style="margin-top:18px;display:flex;flex-direction:column;gap:14px">
+            <div style="display:flex;gap:10px;align-items:flex-start">
+              <span style="width:6px;height:6px;border-radius:50%;background:#51dea2;flex:none;margin-top:5px;box-shadow:0 0 8px #51dea2"></span>
+              <span style="font-size:12.5px;color:#bbcabf;line-height:1.5"><span style="color:#f1f5f3;font-weight:600">Accidental Damage</span>: your Tonal is covered in case of accidental damage such as cracked screens or handles, plus mechanical and electrical failure after your manufacturer warranty expires.</span>
+            </div>
+            <div style="display:flex;gap:10px;align-items:flex-start">
+              <span style="width:6px;height:6px;border-radius:50%;background:#51dea2;flex:none;margin-top:5px;box-shadow:0 0 8px #51dea2"></span>
+              <span style="font-size:12.5px;color:#bbcabf;line-height:1.5"><span style="color:#f1f5f3;font-weight:600">Zero Deductible</span>: you'll never pay a deductible after purchasing your protection.</span>
+            </div>
+            <div style="display:flex;gap:10px;align-items:flex-start">
+              <span style="width:6px;height:6px;border-radius:50%;background:#51dea2;flex:none;margin-top:5px;box-shadow:0 0 8px #51dea2"></span>
+              <span style="font-size:12.5px;color:#bbcabf;line-height:1.5"><span style="color:#f1f5f3;font-weight:600">Repair or replacement</span>: if your Tonal cannot be repaired, it will be replaced.</span>
+            </div>
+          </div>
+
+          <p style="margin-top:18px;font-size:10.5px;color:#5d6a62;line-height:1.5">Limitations and exclusions apply. Read Extend's <a href="https://customers.extend.com/en-US/plan_details/A2-SGFIT-4y" target="_blank" rel="noopener" style="color:#86948a">terms and conditions</a>.</p>
+        </div>
+
+        <!-- ===================== INFO PAGE: INSTALLATION ===================== -->
+        <div id="installationPage" style="display:none;position:absolute;inset:0;background:linear-gradient(180deg,#0c1215 0%,#080c0e 100%);overflow-y:auto;padding:20px 26px 26px">
+          <button data-action="closeInfoPage" style="display:flex;align-items:center;gap:8px;background:transparent;border:none;color:#86948a;font-size:12.5px;font-weight:600;letter-spacing:.04em;padding:0;cursor:pointer">← Back</button>
+          <span style="display:block;margin-top:16px;font-size:10px;font-weight:600;letter-spacing:.18em;color:#51dea2;text-transform:uppercase">Training that complements any space</span>
+          <h2 style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:28px;line-height:1.05;color:#f1f5f3;margin:8px 0 0">Professional installation</h2>
+          <p style="font-size:12.5px;color:#86948a;line-height:1.5;margin:9px 0 0">There's one less step between you and your first workout when our certified team of professional installers delivers, mounts, and sets up your Tonal for a safe and secure training experience.</p>
+
+          <img src="tonal-space.png" alt="Tonal wall-mounted footprint" style="margin-top:18px;width:100%;border-radius:14px;border:1px solid rgba(134,148,138,.2);display:block">
+          <span style="display:block;margin-top:8px;font-size:10.5px;color:#5d6a62;line-height:1.4">Wall-mounted footprint, about 7 ft × 7 ft of clear training space.</span>
+
+          <!-- find the perfect spot -->
+          <div style="margin-top:22px;padding:16px 18px;border-radius:16px;background:rgba(23,28,31,.6);border:1px solid rgba(134,148,138,.16)">
+            <span style="display:block;font-size:10px;font-weight:700;letter-spacing:.14em;color:#51dea2;text-transform:uppercase">Find the perfect spot</span>
+            <div style="margin-top:14px;display:flex;flex-direction:column;gap:14px">
+              <div>
+                <span style="display:block;font-size:12.5px;font-weight:700;color:#f1f5f3">Can be installed on most walls</span>
+                <span style="display:block;margin-top:3px;font-size:11.5px;color:#bbcabf;line-height:1.5">Tonal is installed similarly to TV mount brackets and works with most wood and metal studs 16-24 inches apart.</span>
+              </div>
+              <div>
+                <span style="display:block;font-size:12.5px;font-weight:700;color:#f1f5f3">Minimal space is required</span>
+                <span style="display:block;margin-top:3px;font-size:11.5px;color:#bbcabf;line-height:1.5">The ideal overhead height clearance is 7' 10" to allow Tonal's adjustable arms to fully extend. However, Tonal can still work with a ceiling height of 7'.</span>
+              </div>
+              <div>
+                <span style="display:block;font-size:12.5px;font-weight:700;color:#f1f5f3">Stay connected</span>
+                <span style="display:block;margin-top:3px;font-size:11.5px;color:#bbcabf;line-height:1.5">Choose a space with continuous, reliable WiFi and a grounded, three-prong power outlet within 6 feet of the location without extension cords.</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- installation made easy -->
+          <div style="margin-top:16px;padding:16px 18px;border-radius:16px;background:rgba(23,28,31,.6);border:1px solid rgba(134,148,138,.16)">
+            <span style="display:block;font-size:10px;font-weight:700;letter-spacing:.14em;color:#51dea2;text-transform:uppercase">Tonal installation made easy</span>
+            <div style="margin-top:14px;display:flex;flex-direction:column;gap:14px">
+              <div style="display:flex;gap:12px;align-items:flex-start">
+                <span style="flex:none;width:22px;height:22px;border-radius:50%;background:rgba(81,222,162,.12);border:1px solid rgba(81,222,162,.35);color:#51dea2;font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center">1</span>
+                <span style="font-size:11.5px;color:#bbcabf;line-height:1.45"><span style="color:#f1f5f3;font-weight:600">Choose your space</span>: check that it meets the requirements for the Tonal setup listed above.</span>
+              </div>
+              <div style="display:flex;gap:12px;align-items:flex-start">
+                <span style="flex:none;width:22px;height:22px;border-radius:50%;background:rgba(81,222,162,.12);border:1px solid rgba(81,222,162,.35);color:#51dea2;font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center">2</span>
+                <span style="font-size:11.5px;color:#bbcabf;line-height:1.45"><span style="color:#f1f5f3;font-weight:600">Fill out a survey</span>: after purchase, confirm your space details to ensure proper installation.</span>
+              </div>
+              <div style="display:flex;gap:12px;align-items:flex-start">
+                <span style="flex:none;width:22px;height:22px;border-radius:50%;background:rgba(81,222,162,.12);border:1px solid rgba(81,222,162,.35);color:#51dea2;font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center">3</span>
+                <span style="font-size:11.5px;color:#bbcabf;line-height:1.45"><span style="color:#f1f5f3;font-weight:600">Schedule your installation</span>: schedule a time for our professional installers to get Tonal set up for you.</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- white glove award -->
+          <div style="margin-top:16px;padding:16px 18px;border-radius:16px;background:linear-gradient(150deg,rgba(81,222,162,.10),rgba(23,28,31,.4));border:1px solid rgba(81,222,162,.24)">
+            <span style="display:block;font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:20px;color:#51dea2;line-height:1">White glove. Gold star.</span>
+            <span style="display:block;margin-top:6px;font-size:11.5px;color:#bbcabf;line-height:1.5">Our delivery and installation team has been awarded for their industry-leading service and reliability at the 2026 Last Mile Retail Awards.</span>
+          </div>
+
+          <a href="https://tonal.com/pages/installation" target="_blank" rel="noopener" style="display:block;margin-top:22px;font-size:12px;font-weight:700;color:#51dea2;text-decoration:none">View full installation requirements on tonal.com →</a>
+        </div>
+
+        <!-- ===================== INFO PAGE: MEMBERSHIP ===================== -->
+        <div id="membershipPage" style="display:none;position:absolute;inset:0;background:linear-gradient(180deg,#0c1215 0%,#080c0e 100%);overflow-y:auto;padding:20px 26px 26px">
+          <button data-action="closeInfoPage" style="display:flex;align-items:center;gap:8px;background:transparent;border:none;color:#86948a;font-size:12.5px;font-weight:600;letter-spacing:.04em;padding:0;cursor:pointer">← Back</button>
+          <span style="display:block;margin-top:16px;font-size:10px;font-weight:600;letter-spacing:.18em;color:#51dea2;text-transform:uppercase">Membership</span>
+          <h2 style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:28px;line-height:1.05;color:#f1f5f3;margin:8px 0 0">3,000+ expert-designed workouts and counting</h2>
+          <p style="font-size:12.5px;color:#86948a;line-height:1.5;margin:9px 0 0">From strength to mobility to heart-pumping Aero, Tonal workouts span over 15 categories and offer thousands of live and on-demand classes to keep you coming back, week after week.</p>
+          <p style="font-size:12.5px;color:#86948a;line-height:1.5;margin:9px 0 0">Plus, explore programs designed to help you hit specific goals like Build Muscle, Get Lean, or Improve Fitness.</p>
+
+          <!-- member vs non-member comparison -->
+          <div style="margin-top:20px;border-radius:16px;overflow:hidden;border:1px solid rgba(134,148,138,.16)">
+            <div style="display:flex;align-items:flex-end;padding:12px 14px;background:rgba(23,28,31,.9)">
+              <span style="flex:1;font-size:9px;font-weight:700;letter-spacing:.1em;color:#86948a;text-transform:uppercase">What you get</span>
+              <span style="flex:none;width:56px;text-align:center;font-size:9px;font-weight:700;letter-spacing:.04em;color:#51dea2;text-transform:uppercase;line-height:1.2">Tonal member</span>
+              <span style="flex:none;width:52px;text-align:center;font-size:9px;font-weight:700;letter-spacing:.04em;color:#86948a;text-transform:uppercase;line-height:1.2">Non member</span>
+            </div>
+            <div id="memberCompareRows"></div>
+          </div>
+
+          <!-- invest in your health -->
+          <div style="margin-top:20px;padding:18px 20px;border-radius:16px;background:linear-gradient(150deg,rgba(81,222,162,.12),rgba(23,28,31,.4));border:1px solid rgba(81,222,162,.26)">
+            <span style="display:block;font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:22px;color:#51dea2;line-height:1.05">Invest in your health for under $2/day*</span>
+            <span style="display:block;margin-top:8px;font-size:10.5px;color:#86948a;line-height:1.5">*$59.95/month plus applicable tax. 12-month initial commitment required.</span>
+          </div>
+
+          <a href="https://tonal.com/pages/membership" target="_blank" rel="noopener" style="display:block;margin-top:22px;font-size:12px;font-weight:700;color:#51dea2;text-decoration:none">Learn more about membership on tonal.com →</a>
+        </div>
+
+      </div>
+
+    </div>
+    <!-- bezel chevron -->
+    <div style="display:flex;align-items:center;justify-content:center;padding:11px 0 3px;height:20px">
+      <svg width="20" height="13" viewBox="0 0 20 13" fill="none"><path d="M2 11L10 3l8 8" stroke="rgba(255,255,255,.18)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+    </div>
+  </div>
+</div>
+
+<script src="app.js?v=16"></script>
+</body>
+</html>

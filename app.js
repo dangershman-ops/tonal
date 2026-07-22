@@ -54,62 +54,62 @@
   const GYM_PP = 65;     // $/mo per person, U.S. Health & Fitness Association
   const SESS_RATE = 65;  // $/hr, NESTA certified
   const HOME_GYM_HIGH = 25000; // top of $7K-$25K range, RitFit
-  const AVG_SALES_TAX_PCT = 6.66; // simple average of combined state+local rate, all 50 states, Tax Foundation Jan 2026 data
+  const AVG_SALES_TAX_PCT = 5.09; // simple average of state-only rates, all 50 states + DC, Tax Foundation Jan 2026 data
   const INFO_PAGE_IDS = ['accessoriesPage', 'warrantyPage', 'installationPage', 'membershipPage'];
 
-  // Combined state + avg local sales tax rate by state, Tax Foundation Jan 2026 data
+  // State-only sales tax rate by state, Tax Foundation Jan 2026 data
   const STATE_TAX = [
-    { name: 'Alabama', pct: 9.46 },
-    { name: 'Alaska', pct: 1.82 },
-    { name: 'Arizona', pct: 8.52 },
-    { name: 'Arkansas', pct: 9.46 },
-    { name: 'California', pct: 8.99 },
-    { name: 'Colorado', pct: 7.89 },
+    { name: 'Alabama', pct: 4.0 },
+    { name: 'Alaska', pct: 0.0 },
+    { name: 'Arizona', pct: 5.6 },
+    { name: 'Arkansas', pct: 6.5 },
+    { name: 'California', pct: 7.25 },
+    { name: 'Colorado', pct: 2.9 },
     { name: 'Connecticut', pct: 6.35 },
-    { name: 'Delaware', pct: 0 },
+    { name: 'Delaware', pct: 0.0 },
     { name: 'District of Columbia', pct: 6.0 },
-    { name: 'Florida', pct: 6.98 },
-    { name: 'Georgia', pct: 7.49 },
-    { name: 'Hawaii', pct: 4.5 },
-    { name: 'Idaho', pct: 6.03 },
-    { name: 'Illinois', pct: 8.96 },
+    { name: 'Florida', pct: 6.0 },
+    { name: 'Georgia', pct: 4.0 },
+    { name: 'Hawaii', pct: 4.0 },
+    { name: 'Idaho', pct: 6.0 },
+    { name: 'Illinois', pct: 6.25 },
     { name: 'Indiana', pct: 7.0 },
-    { name: 'Iowa', pct: 6.94 },
-    { name: 'Kansas', pct: 8.69 },
+    { name: 'Iowa', pct: 6.0 },
+    { name: 'Kansas', pct: 6.5 },
     { name: 'Kentucky', pct: 6.0 },
-    { name: 'Louisiana', pct: 10.11 },
+    { name: 'Louisiana', pct: 5.0 },
     { name: 'Maine', pct: 5.5 },
     { name: 'Maryland', pct: 6.0 },
     { name: 'Massachusetts', pct: 6.25 },
     { name: 'Michigan', pct: 6.0 },
-    { name: 'Minnesota', pct: 8.14 },
-    { name: 'Mississippi', pct: 7.06 },
-    { name: 'Missouri', pct: 8.44 },
-    { name: 'Montana', pct: 0 },
-    { name: 'Nebraska', pct: 6.98 },
-    { name: 'Nevada', pct: 8.24 },
-    { name: 'New Hampshire', pct: 0 },
-    { name: 'New Jersey', pct: 6.6 },
-    { name: 'New Mexico', pct: 7.67 },
-    { name: 'New York', pct: 8.54 },
-    { name: 'North Carolina', pct: 7.0 },
-    { name: 'North Dakota', pct: 7.09 },
-    { name: 'Ohio', pct: 7.29 },
-    { name: 'Oklahoma', pct: 9.06 },
-    { name: 'Oregon', pct: 0 },
-    { name: 'Pennsylvania', pct: 6.34 },
+    { name: 'Minnesota', pct: 6.875 },
+    { name: 'Mississippi', pct: 7.0 },
+    { name: 'Missouri', pct: 4.225 },
+    { name: 'Montana', pct: 0.0 },
+    { name: 'Nebraska', pct: 5.5 },
+    { name: 'Nevada', pct: 6.85 },
+    { name: 'New Hampshire', pct: 0.0 },
+    { name: 'New Jersey', pct: 6.625 },
+    { name: 'New Mexico', pct: 4.875 },
+    { name: 'New York', pct: 4.0 },
+    { name: 'North Carolina', pct: 4.75 },
+    { name: 'North Dakota', pct: 5.0 },
+    { name: 'Ohio', pct: 5.75 },
+    { name: 'Oklahoma', pct: 4.5 },
+    { name: 'Oregon', pct: 0.0 },
+    { name: 'Pennsylvania', pct: 6.0 },
     { name: 'Rhode Island', pct: 7.0 },
-    { name: 'South Carolina', pct: 7.49 },
-    { name: 'South Dakota', pct: 6.11 },
-    { name: 'Tennessee', pct: 9.61 },
-    { name: 'Texas', pct: 8.2 },
-    { name: 'Utah', pct: 7.42 },
-    { name: 'Vermont', pct: 6.39 },
-    { name: 'Virginia', pct: 5.77 },
-    { name: 'Washington', pct: 9.51 },
-    { name: 'West Virginia', pct: 6.59 },
-    { name: 'Wisconsin', pct: 5.72 },
-    { name: 'Wyoming', pct: 5.56 },
+    { name: 'South Carolina', pct: 6.0 },
+    { name: 'South Dakota', pct: 4.2 },
+    { name: 'Tennessee', pct: 7.0 },
+    { name: 'Texas', pct: 6.25 },
+    { name: 'Utah', pct: 6.1 },
+    { name: 'Vermont', pct: 6.0 },
+    { name: 'Virginia', pct: 5.3 },
+    { name: 'Washington', pct: 6.5 },
+    { name: 'West Virginia', pct: 6.0 },
+    { name: 'Wisconsin', pct: 5.0 },
+    { name: 'Wyoming', pct: 4.0 },
   ];
 
   const state = {
@@ -486,9 +486,9 @@
     if (document.activeElement !== el('discountRange')) el('discountRange').value = discountDisplayValue;
     renderSummaryRows('summaryListPrice', vals.summary);
     el('allInTotalPrice').textContent = vals.allInLabel;
+    el('tonal1Compare').style.display = vals.isTonal1 ? 'block' : 'none';
     const financingLink = document.getElementById('financingLink');
     if (financingLink) financingLink.href = 'financing.html?amount=' + Math.round(vals.subtotal);
-    el('tonal1Compare').style.display = vals.isTonal1 ? 'block' : 'none';
 
     // ---- compare screen: buy vs rent view ----
     el('compareBuyView').style.display = vals.purchaseMode === 'rent' ? 'none' : 'flex';
@@ -572,8 +572,6 @@
     if (document.activeElement !== el('discountRange')) el('discountRange').value = discountDisplayValue;
     el('allInHero').textContent = vals.allInLabel;
     el('allInTotalPrice').textContent = vals.allInLabel;
-    const financingLink = document.getElementById('financingLink');
-    if (financingLink) financingLink.href = 'financing.html?amount=' + Math.round(vals.subtotal);
     renderSummaryRows('summaryListPrice', vals.summary);
     renderSendSummaryRows('summaryListSend', vals.sendSummary);
     el('recapAllIn').textContent = vals.recapValue;
@@ -644,7 +642,7 @@
   // populate state dropdown once
   el('taxStateSelect').innerHTML =
     '<option value="">Custom rate</option>' +
-    STATE_TAX.map((s) => `<option value="${s.name}">${s.name} — est. ${s.pct}%</option>`).join('');
+    STATE_TAX.map((s) => `<option value="${s.name}">${s.name} — ${s.pct}% state tax</option>`).join('');
 
   el('taxStateSelect').addEventListener('change', (e) => {
     const name = e.target.value;
