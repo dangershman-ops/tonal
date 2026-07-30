@@ -1,60 +1,93 @@
-# Logging quote emails to Google Sheets
+# Logging quotes to Google Sheets
 
-The Send screen already posts `{ email, timestamp }` to `SHEETS_WEBHOOK_URL` in
-`app.js` whenever someone submits a valid email — you just need to create that
-webhook once, under your own Google account.
+The Send screen posts the quote to `SHEETS_WEBHOOK_URL` in `app.js` whenever a
+rep submits a valid quote. The payload looks like:
 
-## 1. Create the sheet
+```json
+{
+  "contactMethod": "email",
+  "contactValue": "customer@email.com",
+  "store": "Bellevue",
+  "quoteLines": "Tonal 2 trainer: $4,295 + Essential Accessories: $495 + ...",
+  "subtotalPreTax": "$4,790",
+  "totalPrice": "$4,790",
+  "purchaseLink": "https://www.tonal.com/cart/49151847006490:1,...",
+  "timestamp": "2026-07-30T17:03:39.306Z"
+}
+```
 
-1. Go to [sheets.google.com](https://sheets.google.com) → new blank sheet.
-2. In row 1, add headers: `Timestamp` | `Email`.
+## 1. Sheet columns (row 1 headers, in this exact order)
 
-## 2. Add the Apps Script
+```
+A Timestamp | B Contact Method | C Contact Info | D Quote Details (Pre-Tax) | E Subtotal (Pre-Tax) | F Store | G Purchase Link | H Agent ID | I Mode | J Trainer | K Accessories | L Warranty | M Coupon
+```
 
-1. In the sheet: **Extensions → Apps Script**.
-2. Delete the placeholder code and paste:
+Columns **G–M** are the additions. **G Purchase Link** is the full checkout
+URL; **H–M** break that link into its individual components (mirroring the
+retail URL-generator columns) so you can read or rebuild it per column:
+
+- **H Agent ID** – rep's showroom agent id (attribution)
+- **I Mode** – `Buy` or `Rent`
+- **J Trainer** – `Tonal 2` or `Tonal 1 - Certified Refurbished`
+- **K Accessories** – bundle name (blank for rentals)
+- **L Warranty** – warranty name (blank for rentals)
+- **M Coupon** – coupon code, if any (blank for rentals)
+
+## 2. Apps Script
+
+In the sheet: **Extensions → Apps Script**, and use this `doPost`. The
+`appendRow` order must match the columns above exactly:
 
 ```javascript
 function doPost(e) {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
   var data = JSON.parse(e.postData.contents);
-  sheet.appendRow([new Date(data.timestamp || Date.now()), data.email || '']);
+  sheet.appendRow([
+    new Date(data.timestamp || Date.now()),        // A Timestamp
+    data.contactMethod || '',                       // B Contact Method
+    data.contactValue || '',                        // C Contact Info
+    data.quoteLines || '',                          // D Quote Details (Pre-Tax)
+    data.subtotalPreTax || data.totalPrice || '',   // E Subtotal (Pre-Tax)
+    data.store || '',                               // F Store
+    data.purchaseLink || '',                        // G Purchase Link
+    data.agentId || '',                             // H Agent ID
+    data.mode || '',                                // I Mode
+    data.trainer || '',                             // J Trainer
+    data.accessories || '',                         // K Accessories
+    data.warranty || '',                            // L Warranty
+    data.coupon || '',                              // M Coupon
+  ]);
   return ContentService.createTextOutput(JSON.stringify({ status: 'ok' }))
     .setMimeType(ContentService.MimeType.JSON);
 }
 ```
 
-3. Save the project (any name is fine, e.g. "Pricing Calculator Webhook").
+The additions from the previous version are the six lines G–M at the end.
+Everything above them is unchanged.
 
-## 3. Deploy as a Web App
+## 3. Push the change to the live webhook
 
-1. Click **Deploy → New deployment**.
-2. Click the gear icon next to "Select type" → **Web app**.
-3. Set **Execute as**: `Me`. Set **Who has access**: `Anyone`.
-4. Click **Deploy**, then authorize the permissions Google asks for (it's your
-   own script, acting on your own sheet).
-5. Copy the **Web app URL** — it ends in `/exec`.
+Saving the code in the editor is **not** enough — the existing `/exec` URL
+keeps serving the old version until you redeploy:
 
-## 4. Wire it into the app
+1. **Deploy → Manage deployments**.
+2. Click the pencil (edit) on the active deployment.
+3. Set **Version** to **New version**.
+4. Click **Deploy**.
 
-Open `app/app.js` and paste the URL into:
-
-```javascript
-const SHEETS_WEBHOOK_URL = 'https://script.google.com/macros/s/XXXXXXXX/exec';
-```
-
-That's it — every valid "Send" submission will append a row with the
-timestamp and email. No further deploy step is needed on the Apps Script
-side; it updates live.
+The `/exec` URL stays the same, so no change is needed in `app.js`.
 
 ### Notes
 
-- The request uses `mode: 'no-cors'`, so the browser can't read the response
-  (Apps Script doesn't return CORS headers) — the app fires the request and
-  moves on regardless of whether it succeeds. If rows aren't showing up,
-  
-  double check the deployment access is set to "Anyone" and the URL ends in
-  `/exec` (not `/dev`).
-- Anyone with the deployed URL can technically append rows to your sheet
-  (it isn't authenticated) — fine for an internal demo/testing tool, not a
-  substitute for a real backend if this ever goes to production.
+- The tonal.com checkout link is built from the quote (trainer, accessories,
+  warranty, buy/rent), the rep's **Agent ID**, the selected **store** (its
+  location code), and an optional **coupon** — matching the retail URL roster
+  format (`attributes[showroom_agent]`, `attributes[location]`). It is no
+  longer shown on-screen; it is only recorded in this sheet on Send.
+- Rent quotes log a `rent.tonal.com/checkout/...` link instead of a cart link.
+- If the Purchase Link column stays empty, the rep hadn't entered their Agent
+  ID (or no store was selected) when they sent — both are required to build a
+  valid link.
+- The request uses `mode: 'no-cors'`, so the browser can't read the response;
+  the app fires and moves on. If rows aren't appearing, confirm the deployment
+  access is "Anyone" and the URL ends in `/exec`.
