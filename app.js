@@ -123,12 +123,14 @@
     }
     const warrantyCode = PRODUCT_CODES.warranty[state.warranty];
     if (warrantyCode) segs.push(warrantyCode + ':1');
-    let url = 'https://www.tonal.com/cart/' + segs.join(',') +
-      '?attributes[location]=' + encodeURIComponent(loc) +
-      '&attributes[showroom_agent]=' + encodeURIComponent(agent) +
-      '&storefront=true';
+    // param order matches the roster's URL-generator formula exactly:
+    // discount (if any) first, then location, then showroom_agent, then storefront.
     const coupon = (state.coupon || '').trim();
-    if (coupon) url += '&discount=' + encodeURIComponent(coupon);
+    let url = 'https://www.tonal.com/cart/' + segs.join(',');
+    url += (coupon ? '?discount=' + encodeURIComponent(coupon) : '?attributes[location]=' + encodeURIComponent(loc));
+    if (coupon) url += '&attributes[location]=' + encodeURIComponent(loc);
+    url += '&attributes[showroom_agent]=' + encodeURIComponent(agent);
+    url += '&storefront=true';
     return url;
   }
 
