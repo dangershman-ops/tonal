@@ -113,40 +113,53 @@
             <!-- sales tax (rep) -->
             <div style="margin-top:22px;padding:16px 18px;border-radius:16px;background:rgba(23,28,31,.6);border:1px solid rgba(134,148,138,.16)">
               <div style="display:flex;align-items:center;justify-content:space-between">
-                <span style="font-size:10px;font-weight:700;letter-spacing:.14em;color:#86948a;text-transform:uppercase">Est. sales tax</span>
+                <span style="font-size:10px;font-weight:700;letter-spacing:.14em;color:#86948a;text-transform:uppercase">State sales tax</span>
                 <span style="display:flex;align-items:baseline">
                   <input id="taxPctInput" type="number" inputmode="decimal" step="0.25" min="0" value="6.66" style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:26px;color:#51dea2;line-height:1;background:transparent;border:none;outline:none;text-align:right;width:64px">
                   <span style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:26px;color:#51dea2;line-height:1">%</span>
                 </span>
               </div>
               <select id="taxStateSelect" style="width:100%;height:42px;margin-top:12px;padding:0 14px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid rgba(134,148,138,.2);color:#f1f5f3;font-size:13px;font-weight:600"></select>
-              <span style="display:block;margin-top:8px;font-size:10.5px;color:#86948a;line-height:1.4">Estimate only. Each state shows its average combined state + local rate; pick your state, or type your exact local rate above.</span>
+              <span style="display:block;margin-top:8px;font-size:10.5px;color:#86948a;line-height:1.4">State tax rate only — does not include any additional municipal or county taxes that may apply.</span>
             </div>
 
             <!-- discount on trainer (collapsible, Tonal 2 only) -->
             <div id="discountBlock" style="margin-top:16px;padding:16px 18px;border-radius:16px;background:rgba(23,28,31,.6);border:1px solid rgba(134,148,138,.16)">
               <button data-action="toggleDiscountOpen" style="all:unset;cursor:pointer;display:flex;align-items:center;justify-content:space-between;width:100%">
-                <span style="font-size:10px;font-weight:700;letter-spacing:.14em;color:#86948a;text-transform:uppercase"><span id="discountToggleIcon">+</span> Discount on trainer</span>
+                <span style="font-size:10px;font-weight:700;letter-spacing:.14em;color:#86948a;text-transform:uppercase"><span id="discountToggleIcon">+</span> Discount &amp; coupon</span>
                 <span id="discountCollapsedValue" style="font-family:'Big Shoulders Display',sans-serif;font-weight:700;font-size:15px;color:#51dea2"></span>
               </button>
               <div id="discountControls" style="display:none">
-                <div style="display:flex;align-items:center;justify-content:flex-end;margin-top:14px">
-                  <div style="display:flex;align-items:center;gap:10px">
-                    <div style="display:flex;border-radius:8px;border:1px solid rgba(134,148,138,.3);overflow:hidden">
-                      <button data-action="setDiscountModePct" id="discModePctBtn" style="width:26px;height:22px;border:none;font-size:11px;font-weight:700;cursor:pointer">%</button>
-                      <button data-action="setDiscountModeDollar" id="discModeDollarBtn" style="width:26px;height:22px;border:none;font-size:11px;font-weight:700;cursor:pointer">$</button>
+                <!-- manual %/$ discount on trainer (Tonal 2 only) -->
+                <div id="manualDiscountRow">
+                  <span style="display:block;margin-top:14px;font-size:9.5px;font-weight:700;letter-spacing:.1em;color:#5d6a62;text-transform:uppercase">Manual discount on trainer</span>
+                  <div style="display:flex;align-items:center;justify-content:flex-end;margin-top:8px">
+                    <div style="display:flex;align-items:center;gap:10px">
+                      <div style="display:flex;border-radius:8px;border:1px solid rgba(134,148,138,.3);overflow:hidden">
+                        <button data-action="setDiscountModePct" id="discModePctBtn" style="width:26px;height:22px;border:none;font-size:11px;font-weight:700;cursor:pointer">%</button>
+                        <button data-action="setDiscountModeDollar" id="discModeDollarBtn" style="width:26px;height:22px;border:none;font-size:11px;font-weight:700;cursor:pointer">$</button>
+                      </div>
+                      <span style="display:flex;align-items:baseline">
+                        <span id="discountDollarPrefix" style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:26px;color:#51dea2;line-height:1;display:none">$</span>
+                        <input id="discountValueInput" type="number" inputmode="decimal" step="1" min="0" value="0" style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:26px;color:#51dea2;line-height:1;background:transparent;border:none;outline:none;text-align:right;width:64px">
+                        <span id="discountPctSuffix" style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:26px;color:#51dea2;line-height:1">%</span>
+                      </span>
                     </div>
-                    <span style="display:flex;align-items:baseline">
-                      <span id="discountDollarPrefix" style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:26px;color:#51dea2;line-height:1;display:none">$</span>
-                      <input id="discountValueInput" type="number" inputmode="decimal" step="1" min="0" value="0" style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:26px;color:#51dea2;line-height:1;background:transparent;border:none;outline:none;text-align:right;width:64px">
-                      <span id="discountPctSuffix" style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:26px;color:#51dea2;line-height:1">%</span>
-                    </span>
+                  </div>
+                  <input id="discountRange" type="range" min="0" max="30" step="1" value="0" style="width:100%;margin-top:14px;height:6px">
+                  <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">
+                    <span id="discountMinLabel" style="font-size:10px;color:#5d6a62">0%</span>
+                    <span id="discountMaxLabel" style="font-size:10px;color:#5d6a62">30%</span>
                   </div>
                 </div>
-                <input id="discountRange" type="range" min="0" max="30" step="1" value="0" style="width:100%;margin-top:14px;height:6px">
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">
-                  <span id="discountMinLabel" style="font-size:10px;color:#5d6a62">0%</span>
-                  <span id="discountMaxLabel" style="font-size:10px;color:#5d6a62">30%</span>
+
+                <!-- coupon code (both trainers) -> added to the checkout link -->
+                <div style="margin-top:16px;padding-top:14px;border-top:1px solid rgba(134,148,138,.14)">
+                  <div style="display:flex;align-items:center;gap:10px">
+                    <span style="font-size:9.5px;font-weight:700;letter-spacing:.1em;color:#5d6a62;text-transform:uppercase;white-space:nowrap">Coupon code</span>
+                    <input id="couponCodeInput" placeholder="e.g. BFCM11NYE" style="flex:1;min-width:0;height:38px;padding:0 12px;border-radius:10px;background:rgba(255,255,255,.03);border:1px solid rgba(134,148,138,.2);color:#f1f5f3;font-size:13px;font-weight:600;text-align:right;text-transform:uppercase">
+                  </div>
+                  <span style="display:block;margin-top:8px;font-size:10px;color:#5d6a62;line-height:1.45">Applied to the customer's checkout link and saved to your quote log on Send. Codes rotate, enter the current active code.</span>
                 </div>
               </div>
             </div>
@@ -370,13 +383,38 @@
                 <span style="display:block;font-size:10px;font-weight:700;letter-spacing:.14em;color:#86948a;text-transform:uppercase;margin-bottom:8px">Store</span>
                 <select id="storeSelect" style="width:100%;height:48px;padding:0 18px;border-radius:999px;background:rgba(255,255,255,.03);border:1px solid rgba(134,148,138,.2);color:#f1f5f3;font-size:14px;font-weight:600">
                   <option value="">Select store</option>
-                  <option value="Bellevue">Bellevue</option>
-                  <option value="Short Hills">Short Hills</option>
-                  <option value="Old Orchard">Old Orchard</option>
-                  <option value="Century City">Century City</option>
-                  <option value="North Park">North Park</option>
-                  <option value="Perimeter (Atlanta)">Perimeter (Atlanta)</option>
+                  <option value="tn-bv">Bellevue</option>
+                  <option value="BostonSeaport">Boston Seaport</option>
+                  <option value="tn-wnck">Broadway Plaza</option>
+                  <option value="tn-cc">Century City</option>
+                  <option value="tn-chck">Cherry Creek</option>
+                  <option value="tn-fsq">Fashion Square</option>
+                  <option value="tn-kop">King of Prussia</option>
+                  <option value="tn-ntck">Natick</option>
+                  <option value="tn-npsr">Northpark</option>
+                  <option value="tn-oo">Old Orchard</option>
+                  <option value="tn-pmtr">Perimeter</option>
+                  <option value="tn-sh">Short Hills</option>
+                  <option value="tn-tc">Tyson's Corner</option>
+                  <option value="tn-utc">UTC</option>
+                  <option value="tn-twc">Westchester</option>
                 </select>
+              </div>
+
+              <!-- checkout link attribution (saved to quote log) -->
+              <div style="margin-top:16px;padding:16px 18px;border-radius:16px;background:rgba(23,28,31,.7);border:1px solid rgba(134,148,138,.16)">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+                  <span style="font-size:10px;font-weight:700;letter-spacing:.14em;color:#86948a;text-transform:uppercase">Checkout link</span>
+                  <span style="font-size:9.5px;color:#5d6a62">saved to quote log</span>
+                </div>
+
+                <!-- agent id -->
+                <div style="margin-top:12px;display:flex;align-items:center;gap:10px">
+                  <span style="font-size:11.5px;color:#bbcabf;white-space:nowrap">Your Agent ID</span>
+                  <input id="repAgentInput" inputmode="numeric" placeholder="e.g. 293" style="flex:1;min-width:0;height:38px;padding:0 12px;border-radius:10px;background:rgba(255,255,255,.03);border:1px solid rgba(134,148,138,.2);color:#f1f5f3;font-size:13px;font-weight:600;text-align:right">
+                </div>
+
+                <span style="display:block;margin-top:10px;font-size:10px;color:#5d6a62;line-height:1.45">Agent ID saves on this device. A tonal.com checkout link is built from this quote (with your store, Agent ID &amp; any coupon from page 1) and recorded in your quote log when you send.</span>
               </div>
 
               <!-- contact input -->
