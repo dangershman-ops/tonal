@@ -14,16 +14,22 @@
   // Leave blank to skip logging; the Send flow still works locally either way.
   const SHEETS_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbzg5uDJ_HtuLQAO2gcgZpmYyuCJfDqBlxd_P4Wvo7L-cUmd1k7bdPwLsI97wFIuPrkspw/exec';
 
-  function logQuoteToSheet(contactMethod, contactValue, store, quoteLines, subtotalPreTax) {
+  function logQuoteToSheet(contactMethod, contactValue, store, quoteLines, subtotalPreTax, purchaseLink, parts) {
     if (!SHEETS_WEBHOOK_URL) return;
+    // Base payload + each link component broken out into its own field (parts),
+    // mirroring the URL-generator columns (Agent ID / Trainer / Accessories /
+    // Warranty / Coupon) so the sheet can read or rebuild the link per column.
+    const body = Object.assign({
+      contactMethod, contactValue, store, quoteLines,
+      subtotalPreTax, totalPrice: subtotalPreTax,
+      purchaseLink: purchaseLink || '',
+      timestamp: new Date().toISOString(),
+    }, parts || {});
     fetch(SHEETS_WEBHOOK_URL, {
       method: 'POST',
       mode: 'no-cors',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      // Logs the pre-tax subtotal only (sales tax is an estimate, not a firm charge).
-      // `totalPrice` is kept as an alias of the pre-tax value so an existing Apps Script
-      // that reads data.totalPrice keeps working — just relabel that sheet column.
-      body: JSON.stringify({ contactMethod, contactValue, store, quoteLines, subtotalPreTax, totalPrice: subtotalPreTax, timestamp: new Date().toISOString() }),
+      body: JSON.stringify(body),
     }).catch((err) => console.warn('Sheet logging failed:', err));
   }
 
@@ -48,6 +54,83 @@
     tonal2: { promo: 219, regular: 279, savingsMo: 60, savingsTotal: 180 },
     tonal1: { promo: 159, regular: 219, savingsMo: 60, savingsTotal: 180 },
   };
+
+  // ---- purchase-link attribution (tonal.com checkout) ----
+  // Shopify variant IDs from the retail URL roster. Order in cart: trainer, accessories, warranty.
+  const PRODUCT_CODES = {
+    trainer: { tonal2: '49151847006490', tonal1: '50907888189722' }, // T1 = Certified Refurbished
+    accessories: {
+      tonal2: { essential: '49888098779418', ultimate: '51881990717722' },
+      tonal1: { essential: '50907899298074', ultimate: '50907899298074' }, // one T1 bundle
+    },
+    warranty: { four: '50385440145690', five: '50385306616090' },
+  };
+
+  // Store name + SFDC location code (from the roster LOGIC sheet).
+  const STORE_LOCATIONS = [
+    { name: 'Bellevue', code: 'tn-bv' },
+    { name: 'Boston Seaport', code: 'BostonSeaport' },
+    { name: 'Broadway Plaza', code: 'tn-wnck' },
+    { name: 'Century City', code: 'tn-cc' },
+    { name: 'Cherry Creek', code: 'tn-chck' },
+    { name: 'Fashion Square', code: 'tn-fsq' },
+    { name: 'King of Prussia', code: 'tn-kop' },
+    { name: 'Natick', code: 'tn-ntck' },
+    { name: 'Northpark', code: 'tn-npsr' },
+    { name: 'Old Orchard', code: 'tn-oo' },
+    { name: 'Perimeter', code: 'tn-pmtr' },
+    { name: 'Short Hills', code: 'tn-sh' },
+    { name: "Tyson's Corner", code: 'tn-tc' },
+    { name: 'UTC', code: 'tn-utc' },
+    { name: 'Westchester', code: 'tn-twc' },
+  ];
+  const storeName = (code) => (STORE_LOCATIONS.find((l) => l.code === code) || {}).name || '';
+
+  // Rep identity persists on the device; a personal bookmark (?agent=293&loc=tn-bv) prefills it.
+  const REP_KEY = 'tonalRep';
+  function loadRep() {
+    let saved = {};
+    try { saved = JSON.parse(localStorage.getItem(REP_KEY) || '{}') || {}; } catch (e) { saved = {}; }
+    try {
+      const p = new URLSearchParams(location.search);
+      const pAgent = p.get('agent');
+      const pLoc = p.get('loc');
+      if (pAgent) saved.agent = pAgent.trim();
+      if (pLoc) saved.loc = pLoc.trim();
+      if (pAgent || pLoc) { try { localStorage.setItem(REP_KEY, JSON.stringify(saved)); } catch (e) {} }
+    } catch (e) {}
+    return saved;
+  }
+  function saveRep(rep) {
+    try { localStorage.setItem(REP_KEY, JSON.stringify(rep)); } catch (e) {}
+  }
+
+  function buildPurchaseLink(vals) {
+    const agent = (state.repAgent || '').trim();
+    const loc = (state.store || '').trim(); // store dropdown value IS the location code
+    if (!agent || !loc) return '';
+    const trainerKey = vals.isTonal2 ? 'tonal2' : 'tonal1';
+    if (vals.isRent) {
+      const product = vals.isTonal2 ? 'tonal-2' : 'tonal-1';
+      return 'https://rent.tonal.com/checkout/tonal?products=' + product +
+        '&showroom_agent=' + encodeURIComponent(agent) +
+        '&location=' + encodeURIComponent(loc) + '&storefront=true';
+    }
+    const segs = [PRODUCT_CODES.trainer[trainerKey] + ':1'];
+    if (state.bundle && state.bundle !== 'none') {
+      const accCode = (PRODUCT_CODES.accessories[trainerKey] || {})[state.bundle];
+      if (accCode) segs.push(accCode + ':1');
+    }
+    const warrantyCode = PRODUCT_CODES.warranty[state.warranty];
+    if (warrantyCode) segs.push(warrantyCode + ':1');
+    let url = 'https://www.tonal.com/cart/' + segs.join(',') +
+      '?attributes[location]=' + encodeURIComponent(loc) +
+      '&attributes[showroom_agent]=' + encodeURIComponent(agent) +
+      '&storefront=true';
+    const coupon = (state.coupon || '').trim();
+    if (coupon) url += '&discount=' + encodeURIComponent(coupon);
+    return url;
+  }
 
   const H_LABELS = { 1: 'Just me', 2: 'Me & my partner', 3: 'Small family', 4: 'Small family', 5: 'Whole family', 6: 'Whole family' };
 
@@ -131,8 +214,17 @@
     contactMethod: 'email',
     contactValue: '',
     store: '',
+    repAgent: '',
+    coupon: '',           // coupon code that goes into the checkout link
     sent: false,
   };
+
+  // restore persisted rep identity (agent id + store location code)
+  (function () {
+    const rep = loadRep();
+    if (rep.agent) state.repAgent = rep.agent;
+    if (rep.loc) state.store = rep.loc;
+  })();
 
   function setState(patch) {
     Object.assign(state, patch);
@@ -322,6 +414,7 @@
       contactValue,
       contactValid,
       store,
+      storeNameLabel: storeName(store),
       storeValid,
     };
   }
@@ -474,10 +567,17 @@
     el('warrantyControls').style.display = vals.warrantyOpen ? 'block' : 'none';
     el('warrantyToggleIcon').textContent = vals.warrantyOpen ? '−' : '+';
     el('warrantyCollapsedValue').textContent = (!vals.warrantyOpen && vals.warrantyPrice > 0) ? fmt(vals.warrantyPrice) : '';
-    el('discountBlock').style.display = vals.isTonal2 ? 'block' : 'none';
+    // discount/coupon section: block always shows; the %/$ manual discount is Tonal 2 only,
+    // the coupon code applies to both trainers.
     el('discountControls').style.display = vals.discountOpen ? 'block' : 'none';
+    el('manualDiscountRow').style.display = vals.isTonal2 ? 'block' : 'none';
     el('discountToggleIcon').textContent = vals.discountOpen ? '−' : '+';
-    el('discountCollapsedValue').textContent = (!vals.discountOpen && vals.discountAmount > 0) ? '-' + fmt(vals.discountAmount) : '';
+    let discountCollapsed = '';
+    if (vals.discountAmount > 0) discountCollapsed = '-' + fmt(vals.discountAmount);
+    else if (state.coupon) discountCollapsed = state.coupon;
+    el('discountCollapsedValue').textContent = !vals.discountOpen ? discountCollapsed : '';
+    const couponCodeInput = el('couponCodeInput');
+    if (couponCodeInput && document.activeElement !== couponCodeInput) couponCodeInput.value = state.coupon;
     if (document.activeElement !== el('taxPctInput')) el('taxPctInput').value = vals.taxPctLabel;
     el('taxStateSelect').value = state.taxState;
     syncDiscountModeUI(vals);
@@ -545,6 +645,8 @@
     if (document.activeElement !== input) input.value = vals.contactValue;
     const storeSelect = el('storeSelect');
     if (document.activeElement !== storeSelect) storeSelect.value = vals.store;
+    const repAgentInput = el('repAgentInput');
+    if (repAgentInput && document.activeElement !== repAgentInput) repAgentInput.value = state.repAgent;
     updateContactDependent(vals);
 
     el('notSentPanel').style.display = state.sent ? 'none' : 'flex';
@@ -618,18 +720,30 @@
             .filter((r) => !r.label.startsWith('Est. sales tax'))
             .map((r) => r.label + ': ' + r.value)
             .join(' + ');
-          logQuoteToSheet(vals.contactMethod, vals.contactValue.trim(), vals.store, quoteLines, vals.logValue);
+          // each checkout-link component in its own field (blank for the parts a
+          // rental link doesn't carry) so the sheet mirrors the URL-generator columns
+          const parts = {
+            agentId: state.repAgent || '',
+            mode: vals.isRent ? 'Rent' : 'Buy',
+            trainer: vals.isTonal2 ? 'Tonal 2' : 'Tonal 1 - Certified Refurbished',
+            accessories: vals.isRent ? '' : ((BUNDLES.find((b) => b.key === state.bundle) || {}).name || ''),
+            warranty: vals.isRent ? '' : ((WARRANTY.find((w) => w.key === state.warranty) || {}).name || ''),
+            coupon: vals.isRent ? '' : (state.coupon || ''),
+          };
+          logQuoteToSheet(vals.contactMethod, vals.contactValue.trim(), vals.storeNameLabel, quoteLines, vals.logValue, buildPurchaseLink(vals), parts);
           setState({ sent: true });
         }
         break;
       }
       case 'restart':
-        setState({ step: 0, sent: false, contactValue: '', store: '' });
+        // keep rep context (agent id + store); clear the customer's details + coupon
+        setState({ step: 0, sent: false, contactValue: '', coupon: '' });
         el('emailInput').value = '';
-        el('storeSelect').value = '';
+        if (el('couponCodeInput')) el('couponCodeInput').value = '';
         break;
     }
   });
+
 
   el('taxPctInput').addEventListener('input', (e) => {
     const v = parseFloat(e.target.value);
@@ -675,7 +789,24 @@
 
   el('storeSelect').addEventListener('change', (e) => {
     state.store = e.target.value;
+    const rep = loadRep();
+    rep.loc = state.store;
+    saveRep(rep);
     updateContactDependent(computeVals());
+  });
+
+  el('repAgentInput').addEventListener('input', (e) => {
+    state.repAgent = e.target.value.replace(/[^0-9]/g, '');
+    if (e.target.value !== state.repAgent) e.target.value = state.repAgent;
+    const rep = loadRep();
+    rep.agent = state.repAgent;
+    saveRep(rep);
+  });
+
+  el('couponCodeInput').addEventListener('input', (e) => {
+    const clean = e.target.value.toUpperCase().replace(/\s/g, '');
+    if (e.target.value !== clean) e.target.value = clean;
+    state.coupon = clean;
   });
 
   // populate the membership member-vs-non-member comparison once
