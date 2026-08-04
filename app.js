@@ -544,11 +544,15 @@
     el('discModeDollarBtn').style.color = isDollar ? '#051512' : '#86948a';
     el('discountPctSuffix').style.display = isDollar ? 'none' : 'inline';
     el('discountDollarPrefix').style.display = isDollar ? 'inline' : 'none';
-    const max = isDollar ? vals.discountTargetPrice : 30;
+    // trainer discounts stay capped at 30%; accessories can go all the way to
+    // 100% (free), since a "free accessories" promo is a normal real sale
+    const pctMax = vals.discountTarget === 'bundle' ? 100 : 30;
+    const max = isDollar ? vals.discountTargetPrice : pctMax;
     el('discountRange').max = max;
     el('discountRange').step = isDollar ? 25 : 1;
     el('discountMinLabel').textContent = isDollar ? '$0' : '0%';
-    el('discountMaxLabel').textContent = isDollar ? fmt(max) : '30%';
+    el('discountMaxLabel').textContent = isDollar ? fmt(max) : (pctMax + '%');
+    el('discountFreeBtn').style.display = vals.discountTarget === 'bundle' ? 'block' : 'none';
   }
 
   function renderFull() {
@@ -720,6 +724,7 @@
       case 'setDiscountModePct': setState({ discountMode: 'pct' }); break;
       case 'setDiscountModeDollar': setState({ discountMode: 'dollar' }); break;
       case 'toggleDiscountOpen': setState({ discountOpen: !state.discountOpen }); break;
+      case 'setDiscountFree': setState({ discountMode: 'pct', discountPct: 100 }); break;
       case 'selectHousehold': setState({ household: parseInt(value, 10) }); break;
       case 'setMembershipTab': setState({ compareTab: 'membership' }); break;
       case 'setHomeGymTab': setState({ compareTab: 'homeGym' }); break;
