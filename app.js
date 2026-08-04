@@ -138,6 +138,48 @@
       '&storefront=true';
   }
 
+  // shared by the Send button and the Skip button — same sheet payload either way,
+  // only the contact fields differ.
+  function buildQuoteLinesAndParts(vals) {
+    // Quote Details logged to the sheet excludes tax, shipping, AND the manual
+    // discount (the on-screen quote the customer sees is unaffected — this is
+    // a sheet-only view). The discount is instead carried in the Discount
+    // Applied field so reps can still see what to quote the customer.
+    const quoteLines = vals.isRent
+      ? vals.sendSummary.map((r) => r.label + ': ' + r.value).join(' + ')
+      : [
+          { label: vals.trainerName + ' trainer', value: fmt(vals.trainerPrice) },
+          { label: vals.bundleObj.name, value: fmt(vals.bundleObj.price) },
+          { label: vals.warrantyObj.name, value: fmt(vals.warrantyPrice) },
+          { label: 'Subtotal (pre-tax, shipping and discount)', value: fmt(vals.subtotalNoShipDiscount) },
+        ].map((r) => r.label + ': ' + r.value).join(' + ');
+    // each checkout-link component in its own field (blank for the parts a
+    // rental link doesn't carry) so the sheet mirrors the URL-generator columns
+    const parts = {
+      agentId: state.repAgent || '',
+      mode: vals.isRent ? 'Rent' : 'Buy',
+      trainer: vals.isTonal2 ? 'Tonal 2' : 'Tonal 1 - Certified Refurbished',
+      accessories: vals.isRent ? '' : ((BUNDLES.find((b) => b.key === state.bundle) || {}).name || ''),
+      warranty: vals.isRent ? '' : ((WARRANTY.find((w) => w.key === state.warranty) || {}).name || ''),
+      discountApplied: (!vals.isRent && vals.discountDescription) ? vals.discountDescription : '',
+    };
+    return { quoteLines, parts };
+  }
+
+  function fallbackCopy(text, cb) {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      if (cb) cb();
+    } catch (e) { /* no-op */ }
+  }
+
   const H_LABELS = { 1: 'Just me', 2: 'Me & my partner', 3: 'Small family', 4: 'Small family', 5: 'Whole family', 6: 'Whole family' };
 
   const GYM_PP = 65;     // $/mo per person, U.S. Health & Fitness Association
@@ -223,6 +265,8 @@
     store: '',
     repAgent: '',
     sent: false,
+    skippedContact: false,   // true when sent via the "skip" button (no email/text collected)
+    linkRevealOpen: false,   // on-screen purchase-link reveal, toggled by "Show purchase link"
   };
 
   // restore persisted rep identity (agent id + store location code)
@@ -673,10 +717,20 @@
     if (repAgentInput && document.activeElement !== repAgentInput) repAgentInput.value = state.repAgent;
     updateContactDependent(vals);
 
+    // on-screen purchase-link reveal (Checkout link card)
+    el('showLinkBtn').textContent = state.linkRevealOpen ? 'Hide purchase link' : 'Show purchase link';
+    el('purchaseLinkReveal').style.display = state.linkRevealOpen ? 'block' : 'none';
+    if (state.linkRevealOpen) {
+      const link = buildPurchaseLink(vals);
+      el('purchaseLinkText').textContent = link || 'Enter your Agent ID and select a store above to generate the link.';
+    }
+
     el('notSentPanel').style.display = state.sent ? 'none' : 'flex';
     el('sentPanel').style.display = state.sent ? 'flex' : 'none';
     el('sentTrainerName').textContent = vals.trainerName;
     el('sentEmail').textContent = vals.contactValue;
+    el('sentHeadline').textContent = state.skippedContact ? 'Logged.' : 'Quote sent.';
+    el('sentSubtext').style.display = state.skippedContact ? 'none' : 'block';
   }
 
   function updateContactDependent(vals) {
@@ -686,6 +740,10 @@
     btn.disabled = !canSend;
     btn.style.background = canSend ? '#51dea2' : '#2b3a33';
     btn.style.opacity = canSend ? '1' : '0.5';
+    const canSkip = vals.storeValid && !!(state.repAgent || '').trim();
+    const skipBtn = el('skipBtn');
+    skipBtn.disabled = !canSkip;
+    skipBtn.style.opacity = canSkip ? '1' : '0.4';
   }
 
   function updateTaxDependent() {
@@ -740,36 +798,42 @@
       case 'sendQuote': {
         const vals = computeVals();
         if (vals.contactValid && vals.storeValid) {
-          // Quote Details logged to the sheet excludes tax, shipping, AND the manual
-          // discount (the on-screen quote the customer sees is unaffected — this is
-          // a sheet-only view). The discount is instead carried in the Discount
-          // Applied field below so reps can still see what to quote the customer.
-          const quoteLines = vals.isRent
-            ? vals.sendSummary.map((r) => r.label + ': ' + r.value).join(' + ')
-            : [
-                { label: vals.trainerName + ' trainer', value: fmt(vals.trainerPrice) },
-                { label: vals.bundleObj.name, value: fmt(vals.bundleObj.price) },
-                { label: vals.warrantyObj.name, value: fmt(vals.warrantyPrice) },
-                { label: 'Subtotal (pre-tax, shipping and discount)', value: fmt(vals.subtotalNoShipDiscount) },
-              ].map((r) => r.label + ': ' + r.value).join(' + ');
-          // each checkout-link component in its own field (blank for the parts a
-          // rental link doesn't carry) so the sheet mirrors the URL-generator columns
-          const parts = {
-            agentId: state.repAgent || '',
-            mode: vals.isRent ? 'Rent' : 'Buy',
-            trainer: vals.isTonal2 ? 'Tonal 2' : 'Tonal 1 - Certified Refurbished',
-            accessories: vals.isRent ? '' : ((BUNDLES.find((b) => b.key === state.bundle) || {}).name || ''),
-            warranty: vals.isRent ? '' : ((WARRANTY.find((w) => w.key === state.warranty) || {}).name || ''),
-            discountApplied: (!vals.isRent && vals.discountDescription) ? vals.discountDescription : '',
-          };
+          const { quoteLines, parts } = buildQuoteLinesAndParts(vals);
           logQuoteToSheet(vals.contactMethod, vals.contactValue.trim(), vals.storeNameLabel, quoteLines, vals.logValue, buildPurchaseLink(vals), parts);
-          setState({ sent: true });
+          setState({ sent: true, skippedContact: false });
+        }
+        break;
+      }
+      case 'skipContact': {
+        const vals = computeVals();
+        if (vals.storeValid && (state.repAgent || '').trim()) {
+          const { quoteLines, parts } = buildQuoteLinesAndParts(vals);
+          logQuoteToSheet('', '', vals.storeNameLabel, quoteLines, vals.logValue, buildPurchaseLink(vals), parts);
+          setState({ sent: true, skippedContact: true });
+        }
+        break;
+      }
+      case 'togglePurchaseLinkVisible': setState({ linkRevealOpen: !state.linkRevealOpen }); break;
+      case 'copyPurchaseLink': {
+        const url = buildPurchaseLink(computeVals());
+        if (!url) break;
+        const done = () => {
+          const b = el('copyLinkBtn');
+          if (!b) return;
+          const orig = b.textContent;
+          b.textContent = 'Copied ✓';
+          setTimeout(() => { b.textContent = orig; }, 1800);
+        };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(url).then(done).catch(() => fallbackCopy(url, done));
+        } else {
+          fallbackCopy(url, done);
         }
         break;
       }
       case 'restart':
         // keep rep context (agent id + store); clear only the customer's details
-        setState({ step: 0, sent: false, contactValue: '' });
+        setState({ step: 0, sent: false, skippedContact: false, contactValue: '' });
         el('emailInput').value = '';
         break;
     }
@@ -832,6 +896,11 @@
     const rep = loadRep();
     rep.agent = state.repAgent;
     saveRep(rep);
+    const vals = computeVals();
+    updateContactDependent(vals);
+    if (state.linkRevealOpen) {
+      el('purchaseLinkText').textContent = buildPurchaseLink(vals) || 'Enter your Agent ID and select a store above to generate the link.';
+    }
   });
 
   el('discountTargetSelect').addEventListener('change', (e) => {

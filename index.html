@@ -411,6 +411,13 @@
                 </div>
 
                 <span style="display:block;margin-top:10px;font-size:10px;color:#5d6a62;line-height:1.45">Agent ID saves on this device. A tonal.com checkout link is built from this quote (with your store &amp; Agent ID) and recorded in your quote log when you send.</span>
+
+                <!-- on-screen reveal -->
+                <button id="showLinkBtn" data-action="togglePurchaseLinkVisible" style="margin-top:12px;width:100%;height:36px;border-radius:10px;border:1px solid rgba(134,148,138,.3);background:rgba(255,255,255,.02);color:#bbcabf;font-weight:700;font-size:11.5px;letter-spacing:.02em;cursor:pointer">Show purchase link</button>
+                <div id="purchaseLinkReveal" style="display:none;margin-top:10px">
+                  <div id="purchaseLinkText" style="font-size:11px;color:#71fbbd;line-height:1.45;word-break:break-all;background:rgba(0,0,0,.25);border:1px solid rgba(81,222,162,.2);border-radius:10px;padding:10px 12px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace"></div>
+                  <button id="copyLinkBtn" data-action="copyPurchaseLink" style="margin-top:8px;width:100%;height:38px;border-radius:10px;border:none;background:#51dea2;color:#051512;font-weight:700;font-size:12.5px;letter-spacing:.02em;cursor:pointer">Copy link</button>
+                </div>
               </div>
 
               <!-- contact input -->
@@ -418,6 +425,7 @@
                 <input id="emailInput" placeholder="name@email.com" inputmode="email" style="flex:1;min-width:0;background:transparent;border:none;color:#f1f5f3;font-size:15px">
                 <button id="sendBtn" data-action="sendQuote" disabled style="flex:none;height:48px;padding:0 24px;border-radius:999px;border:none;background:#2b3a33;color:#051512;font-weight:700;font-size:14px;letter-spacing:.03em;opacity:.5">Send</button>
               </div>
+              <button id="skipBtn" data-action="skipContact" disabled style="margin-top:10px;align-self:flex-start;padding:0;background:transparent;border:none;color:#5d6a62;font-size:11.5px;font-weight:600;letter-spacing:.02em;cursor:pointer;text-decoration:underline;text-decoration-color:rgba(134,148,138,.35)">Skip — just log the purchase link</button>
 
               <button data-action="goCompare" style="margin-top:auto;align-self:flex-start;padding:12px 0;background:transparent;border:none;color:#86948a;font-size:12.5px;font-weight:600;letter-spacing:.04em">← Back to comparison</button>
             </div>
@@ -427,8 +435,8 @@
               <div style="width:84px;height:84px;border-radius:50%;background:linear-gradient(150deg,rgba(81,222,162,.22),rgba(81,222,162,.06));border:1px solid rgba(81,222,162,.4);display:flex;align-items:center;justify-content:center;box-shadow:0 0 40px rgba(81,222,162,.25)">
                 <span style="font-size:40px;color:#51dea2;line-height:1">✓</span>
               </div>
-              <h2 style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:32px;color:#f1f5f3;margin:22px 0 0">Quote sent.</h2>
-              <p style="font-size:14px;color:#bbcabf;line-height:1.55;margin:12px 0 0;max-width:32ch">Your <span id="sentTrainerName">Tonal 2</span> quote is on its way to <span id="sentEmail" style="color:#dfe3e7;font-weight:600"></span>.</p>
+              <h2 id="sentHeadline" style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:32px;color:#f1f5f3;margin:22px 0 0">Quote sent.</h2>
+              <p id="sentSubtext" style="font-size:14px;color:#bbcabf;line-height:1.55;margin:12px 0 0;max-width:32ch">Your <span id="sentTrainerName">Tonal 2</span> quote is on its way to <span id="sentEmail" style="color:#dfe3e7;font-weight:600"></span>.</p>
               <button data-action="restart" style="margin-top:28px;height:52px;padding:0 30px;border-radius:999px;border:1px solid rgba(134,148,138,.24);background:transparent;color:#bbcabf;font-weight:600;font-size:14px;letter-spacing:.04em">Start a new quote</button>
             </div>
 
