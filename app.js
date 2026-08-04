@@ -162,6 +162,7 @@
       accessories: vals.isRent ? '' : ((BUNDLES.find((b) => b.key === state.bundle) || {}).name || ''),
       warranty: vals.isRent ? '' : ((WARRANTY.find((w) => w.key === state.warranty) || {}).name || ''),
       discountApplied: (!vals.isRent && vals.discountDescription) ? vals.discountDescription : '',
+      customerFirstName: (state.contactFirstName || '').trim(),
     };
     return { quoteLines, parts };
   }
@@ -185,6 +186,7 @@
   const GYM_PP = 65;     // $/mo per person, U.S. Health & Fitness Association
   const SESS_RATE = 65;  // $/hr, NESTA certified
   const HOME_GYM_HIGH = 25000; // top of $7K-$25K range, RitFit
+  const TS_WASTE_MINUTES_PER_SESSION = 7.5; // avg setup/wait time added per gym session
   const AVG_SALES_TAX_PCT = 5.09; // simple average of state-only rates, all 50 states + DC, Tax Foundation Jan 2026 data
   const INFO_PAGE_IDS = ['accessoriesPage', 'warrantyPage', 'installationPage', 'membershipPage'];
 
@@ -259,9 +261,13 @@
     discountOpen: false,
     discountTarget: 'trainer',   // 'trainer' | 'bundle' — which line item the discount applies to
     household: 1,
-    compareTab: 'membership',
+    compareTab: 'membership',   // 'membership' | 'homeGym' | 'timeSavings'
+    tsSessionsPerWeek: 4,
+    tsDriveMinutes: 20,
+    tsWasteEnabled: true,
     contactMethod: 'email',
     contactValue: '',
+    contactFirstName: '',
     store: '',
     repAgent: '',
     sent: false,
@@ -375,6 +381,15 @@
     // ---- compare: home gym sticker ----
     const tonalBarPct = Math.max(6, Math.round((allIn / HOME_GYM_HIGH) * 100));
     const isMembershipTab = s.compareTab === 'membership';
+    const isTimeSavingsTab = s.compareTab === 'timeSavings';
+
+    // ---- compare: time saved training at home vs driving to the gym ----
+    const tsAnnualSessions = s.tsSessionsPerWeek * 52;
+    const tsDriveMinutesPerYear = tsAnnualSessions * s.tsDriveMinutes;
+    const tsWaitMinutesPerYear = s.tsWasteEnabled ? tsAnnualSessions * TS_WASTE_MINUTES_PER_SESSION : 0;
+    const tsTotalMinutesPerYear = tsDriveMinutesPerYear + tsWaitMinutesPerYear;
+    const tsTotalHours = tsTotalMinutesPerYear / 60;
+    const tsTotalDays = tsTotalHours / 24;
 
     // ---- contact method (email or text) ----
     const contactMethod = s.contactMethod;
@@ -425,6 +440,7 @@
       trainerName,
       isTonal2,
       isTonal1: !isTonal2,
+      allIn,
       allInLabel: fmt(allIn),
       subtotal,
       subtotalLabel: fmt(subtotal),
@@ -465,7 +481,16 @@
       householdLabel: H_LABELS[N],
       columns,
       isMembershipTab,
-      isHomeGymTab: !isMembershipTab,
+      isHomeGymTab: s.compareTab === 'homeGym',
+      isTimeSavingsTab,
+      tsSessionsPerWeek: s.tsSessionsPerWeek,
+      tsDriveMinutes: s.tsDriveMinutes,
+      tsWasteEnabled: s.tsWasteEnabled,
+      tsAnnualSessions,
+      tsHeroHours: Math.round(tsTotalHours),
+      tsHeroDays: tsTotalDays.toFixed(1),
+      tsDriveHoursLabel: (tsDriveMinutesPerYear / 60).toFixed(1),
+      tsWaitHoursLabel: (tsWaitMinutesPerYear / 60).toFixed(1),
       membershipLabel: '$' + membership.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
       memSavesLabel: '$' + Math.round(Math.abs(memDiff)),
       memSavesPositive,
@@ -656,7 +681,7 @@
     el('allInTotalPrice').textContent = vals.allInLabel;
     el('tonal1Compare').style.display = vals.isTonal1 ? 'block' : 'none';
     const financingLink = document.getElementById('financingLink');
-    if (financingLink) financingLink.href = 'financing.html?amount=' + Math.round(vals.subtotal);
+    if (financingLink) financingLink.href = 'financing.html?amount=' + Math.round(vals.allIn);
 
     // ---- compare screen: buy vs rent view ----
     el('compareBuyView').style.display = vals.purchaseMode === 'rent' ? 'none' : 'flex';
@@ -667,8 +692,25 @@
     el('memTabBtn').style.color = vals.isMembershipTab ? '#051512' : '#86948a';
     el('hgTabBtn').style.background = vals.isHomeGymTab ? '#51dea2' : 'transparent';
     el('hgTabBtn').style.color = vals.isHomeGymTab ? '#051512' : '#86948a';
+    el('tsTabBtn').style.background = vals.isTimeSavingsTab ? '#51dea2' : 'transparent';
+    el('tsTabBtn').style.color = vals.isTimeSavingsTab ? '#051512' : '#86948a';
     el('membershipTab').style.display = vals.isMembershipTab ? 'flex' : 'none';
     el('homeGymTab').style.display = vals.isHomeGymTab ? 'flex' : 'none';
+    el('timeSavingsTab').style.display = vals.isTimeSavingsTab ? 'flex' : 'none';
+
+    // ---- compare screen: time saved tab ----
+    if (document.activeElement !== el('tsSessionsRange')) el('tsSessionsRange').value = vals.tsSessionsPerWeek;
+    el('tsSessionsLabel').textContent = vals.tsSessionsPerWeek;
+    if (document.activeElement !== el('tsDriveRange')) el('tsDriveRange').value = vals.tsDriveMinutes;
+    el('tsDriveLabel').textContent = vals.tsDriveMinutes + ' min';
+    el('tsWasteTrack').style.background = vals.tsWasteEnabled ? '#26bf86' : 'rgba(255,255,255,.14)';
+    el('tsWasteThumb').style.left = vals.tsWasteEnabled ? '19px' : '3px';
+    el('tsWaitRow').style.display = vals.tsWasteEnabled ? 'flex' : 'none';
+    el('tsHeroHours').textContent = vals.tsHeroHours;
+    el('tsHeroDays').textContent = '≈ ' + vals.tsHeroDays + ' full days';
+    el('tsDriveHoursLabel').textContent = vals.tsDriveHoursLabel + ' hrs';
+    el('tsWaitHoursLabel').textContent = vals.tsWaitHoursLabel + ' hrs';
+    el('tsAnnualSessions').textContent = vals.tsAnnualSessions;
 
     // ---- compare screen: membership tab ----
     el('membershipLabel').textContent = vals.membershipLabel;
@@ -786,6 +828,8 @@
       case 'selectHousehold': setState({ household: parseInt(value, 10) }); break;
       case 'setMembershipTab': setState({ compareTab: 'membership' }); break;
       case 'setHomeGymTab': setState({ compareTab: 'homeGym' }); break;
+      case 'setTimeSavingsTab': setState({ compareTab: 'timeSavings' }); break;
+      case 'toggleTsWaste': setState({ tsWasteEnabled: !state.tsWasteEnabled }); break;
       case 'setContactMethodEmail': setState({ contactMethod: 'email' }); break;
       case 'setContactMethodText': setState({ contactMethod: 'text' }); break;
       case 'openInfoPage':
@@ -833,8 +877,9 @@
       }
       case 'restart':
         // keep rep context (agent id + store); clear only the customer's details
-        setState({ step: 0, sent: false, skippedContact: false, contactValue: '' });
+        setState({ step: 0, sent: false, skippedContact: false, contactValue: '', contactFirstName: '' });
         el('emailInput').value = '';
+        el('firstNameInput').value = '';
         break;
     }
   });
@@ -882,6 +927,10 @@
     updateContactDependent(computeVals());
   });
 
+  el('firstNameInput').addEventListener('input', (e) => {
+    state.contactFirstName = e.target.value;
+  });
+
   el('storeSelect').addEventListener('change', (e) => {
     state.store = e.target.value;
     const rep = loadRep();
@@ -905,6 +954,14 @@
 
   el('discountTargetSelect').addEventListener('change', (e) => {
     setState({ discountTarget: e.target.value });
+  });
+
+  el('tsSessionsRange').addEventListener('input', (e) => {
+    setState({ tsSessionsPerWeek: parseInt(e.target.value, 10) });
+  });
+
+  el('tsDriveRange').addEventListener('input', (e) => {
+    setState({ tsDriveMinutes: parseInt(e.target.value, 10) });
   });
 
   // populate the membership member-vs-non-member comparison once

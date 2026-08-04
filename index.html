@@ -260,8 +260,9 @@
 
             <!-- tab toggle -->
             <div style="display:flex;border-radius:14px;border:1px solid rgba(134,148,138,.2);overflow:hidden;background:rgba(0,0,0,.2);flex:none">
-              <button data-action="setMembershipTab" id="memTabBtn" style="flex:1;height:46px;border:none;background:#51dea2;color:#051512;font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase">Membership</button>
-              <button data-action="setHomeGymTab" id="hgTabBtn" style="flex:1;height:46px;border:none;background:transparent;color:#86948a;font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase">Home Gym</button>
+              <button data-action="setMembershipTab" id="memTabBtn" style="flex:1;height:46px;border:none;background:#51dea2;color:#051512;font-weight:700;font-size:9.5px;letter-spacing:.05em;text-transform:uppercase">Membership</button>
+              <button data-action="setHomeGymTab" id="hgTabBtn" style="flex:1;height:46px;border:none;background:transparent;color:#86948a;font-weight:700;font-size:9.5px;letter-spacing:.05em;text-transform:uppercase">Home Gym</button>
+              <button data-action="setTimeSavingsTab" id="tsTabBtn" style="flex:1;height:46px;border:none;background:transparent;color:#86948a;font-weight:700;font-size:9.5px;letter-spacing:.05em;text-transform:uppercase">Time Saved</button>
             </div>
 
             <!-- TAB: MEMBERSHIP -->
@@ -317,6 +318,84 @@
               <div style="margin-top:10px;padding:12px 14px;border-radius:14px;background:rgba(23,28,31,.6);border:1px solid rgba(134,148,138,.16);display:flex;align-items:flex-start;gap:10px">
                 <span style="width:7px;height:7px;border-radius:50%;background:#51dea2;flex:none;margin-top:4px;box-shadow:0 0 8px #51dea2"></span>
                 <span style="font-size:11.5px;color:#bbcabf;line-height:1.5">Get the expertise of a personal trainer and a full gym in your home for a fraction of the price!</span>
+              </div>
+            </div>
+
+            <!-- TAB: TIME SAVED -->
+            <div id="timeSavingsTab" style="display:none;flex-direction:column;flex:1">
+              <span style="font-size:10px;font-weight:600;letter-spacing:.18em;color:#51dea2;text-transform:uppercase;display:block;margin-top:16px">Your gym routine</span>
+              <h2 style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:27px;line-height:1.04;color:#f1f5f3;margin:8px 0 0">Time training at<br>home gives back.</h2>
+              <p style="font-size:11.5px;color:#86948a;margin:7px 0 0;line-height:1.45">See the hours you get back in a year training at home instead of driving to the gym.</p>
+
+              <!-- sessions per week -->
+              <div style="margin-top:16px">
+                <div style="display:flex;justify-content:space-between;align-items:baseline">
+                  <span style="font-size:11px;font-weight:600;color:#dfe3e7">Sessions per week</span>
+                  <span id="tsSessionsLabel" style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:18px;color:#51dea2">4</span>
+                </div>
+                <input id="tsSessionsRange" type="range" min="1" max="7" step="1" value="4" style="width:100%;margin-top:6px;height:6px">
+                <div style="display:flex;justify-content:space-between;font-size:9.5px;color:#5d6a62;margin-top:4px"><span>1</span><span>7</span></div>
+              </div>
+
+              <!-- round-trip drive time -->
+              <div style="margin-top:16px">
+                <div style="display:flex;justify-content:space-between;align-items:baseline">
+                  <span style="font-size:11px;font-weight:600;color:#dfe3e7">Round-trip drive time</span>
+                  <span id="tsDriveLabel" style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:18px;color:#51dea2">20 min</span>
+                </div>
+                <input id="tsDriveRange" type="range" min="0" max="60" step="5" value="20" style="width:100%;margin-top:6px;height:6px">
+                <div style="display:flex;justify-content:space-between;font-size:9.5px;color:#5d6a62;margin-top:4px"><span>0 min</span><span>60 min</span></div>
+              </div>
+
+              <!-- setup/waiting toggle -->
+              <div style="margin-top:14px;padding:12px 14px;border-radius:14px;background:rgba(23,28,31,.6);border:1px solid rgba(134,148,138,.16);display:flex;align-items:center;justify-content:space-between;gap:10px">
+                <span>
+                  <span style="display:block;font-size:11.5px;font-weight:600;color:#dfe3e7">Setup &amp; waiting for equipment</span>
+                  <span style="display:block;font-size:10px;color:#86948a;margin-top:2px">Adds 7.5 min per session</span>
+                </span>
+                <button data-action="toggleTsWaste" id="tsWasteToggleBtn" style="all:unset;cursor:pointer;position:relative;width:40px;height:24px;flex:none">
+                  <span id="tsWasteTrack" style="position:absolute;inset:0;border-radius:999px;background:#26bf86;transition:background .15s"></span>
+                  <span id="tsWasteThumb" style="position:absolute;top:3px;left:19px;width:18px;height:18px;border-radius:999px;background:#f3fbff;box-shadow:0 2px 4px rgba(0,0,0,.4);transition:left .15s"></span>
+                </button>
+              </div>
+
+              <!-- hero result -->
+              <div style="margin-top:16px;padding:16px 18px;border-radius:16px;background:linear-gradient(150deg,rgba(81,222,162,.1),rgba(23,28,31,.5));border:1px solid rgba(81,222,162,.28)">
+                <span style="display:block;font-size:10px;font-weight:700;letter-spacing:.14em;color:#86948a;text-transform:uppercase">Time saved per year</span>
+                <div style="display:flex;align-items:baseline;gap:8px;margin-top:8px;flex-wrap:wrap">
+                  <span id="tsHeroHours" style="font-family:'Big Shoulders Display',sans-serif;font-weight:900;font-size:44px;line-height:1;color:#71fbbd">52</span>
+                  <span style="font-family:'Big Shoulders Display',sans-serif;font-weight:700;font-size:14px;color:#dfe3e7">hrs/yr</span>
+                  <span id="tsHeroDays" style="font-size:11px;color:#86948a">≈ 2.2 full days</span>
+                </div>
+              </div>
+
+              <!-- breakdown -->
+              <div style="margin-top:12px;display:flex;flex-direction:column;gap:8px">
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 13px;background:rgba(255,255,255,.03);border:1px solid rgba(134,148,138,.16);border-radius:12px">
+                  <span style="font-size:11.5px;color:#bbcabf">Driving to &amp; from the gym</span>
+                  <span id="tsDriveHoursLabel" style="font-family:'Big Shoulders Display',sans-serif;font-weight:700;font-size:14px;color:#dfe3e7">17.3 hrs</span>
+                </div>
+                <div id="tsWaitRow" style="display:flex;justify-content:space-between;align-items:center;padding:10px 13px;background:rgba(255,255,255,.03);border:1px solid rgba(134,148,138,.16);border-radius:12px">
+                  <span style="font-size:11.5px;color:#bbcabf">Setup &amp; waiting on equipment</span>
+                  <span id="tsWaitHoursLabel" style="font-family:'Big Shoulders Display',sans-serif;font-weight:700;font-size:14px;color:#dfe3e7">6.5 hrs</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 13px;background:rgba(255,255,255,.03);border:1px solid rgba(134,148,138,.16);border-radius:12px">
+                  <span style="font-size:11.5px;color:#bbcabf">Sessions assumed per year</span>
+                  <span id="tsAnnualSessions" style="font-family:'Big Shoulders Display',sans-serif;font-weight:700;font-size:14px;color:#dfe3e7">208</span>
+                </div>
+              </div>
+
+              <!-- gym vs home bars -->
+              <div style="margin-top:14px;display:flex;flex-direction:column;gap:6px">
+                <div style="display:flex;justify-content:space-between;font-size:9.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#86948a"><span>At the gym</span><span>At home</span></div>
+                <div style="height:12px;border-radius:999px;background:rgba(255,255,255,.06);overflow:hidden"><div id="tsGymBar" style="height:100%;border-radius:999px;background:linear-gradient(90deg,#26bf86,#51dea2);width:100%"></div></div>
+                <div style="height:12px;border-radius:999px;background:rgba(255,255,255,.06);overflow:hidden"><div style="height:100%;border-radius:999px;background:rgba(81,222,162,.25);width:2%"></div></div>
+              </div>
+
+              <!-- callout -->
+              <div style="margin-top:12px;padding:12px 14px;border-radius:14px;background:rgba(23,28,31,.6);border:1px solid rgba(134,148,138,.16);display:flex;align-items:flex-start;gap:10px">
+                <span style="width:7px;height:7px;border-radius:50%;background:#51dea2;flex:none;margin-top:4px;box-shadow:0 0 8px #51dea2"></span>
+                <span style="font-size:11.5px;color:#bbcabf;line-height:1.5">24/7 access, no waiting on equipment, and zero commute — every single session.</span>
               </div>
             </div>
 
@@ -420,8 +499,13 @@
                 </div>
               </div>
 
+              <!-- customer first name -->
+              <div style="margin-top:18px">
+                <input id="firstNameInput" placeholder="Customer first name" style="width:100%;height:44px;padding:0 18px;border-radius:999px;background:rgba(255,255,255,.03);border:1px solid rgba(134,148,138,.2);color:#f1f5f3;font-size:14px">
+              </div>
+
               <!-- contact input -->
-              <div id="emailWrap" style="margin-top:18px;display:flex;align-items:center;gap:10px;padding:6px 6px 6px 18px;border-radius:999px;background:rgba(255,255,255,.03);border:1px solid rgba(134,148,138,.2)">
+              <div id="emailWrap" style="margin-top:12px;display:flex;align-items:center;gap:10px;padding:6px 6px 6px 18px;border-radius:999px;background:rgba(255,255,255,.03);border:1px solid rgba(134,148,138,.2)">
                 <input id="emailInput" placeholder="name@email.com" inputmode="email" style="flex:1;min-width:0;background:transparent;border:none;color:#f1f5f3;font-size:15px">
                 <button id="sendBtn" data-action="sendQuote" disabled style="flex:none;height:48px;padding:0 24px;border-radius:999px;border:none;background:#2b3a33;color:#051512;font-weight:700;font-size:14px;letter-spacing:.03em;opacity:.5">Send</button>
               </div>
