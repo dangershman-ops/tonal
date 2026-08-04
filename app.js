@@ -390,6 +390,8 @@
     const tsTotalMinutesPerYear = tsDriveMinutesPerYear + tsWaitMinutesPerYear;
     const tsTotalHours = tsTotalMinutesPerYear / 60;
     const tsTotalDays = tsTotalHours / 24;
+    const tsWeekHours = tsTotalHours / 52;
+    const tsMonthHours = tsTotalHours / 12;
 
     // ---- contact method (email or text) ----
     const contactMethod = s.contactMethod;
@@ -489,6 +491,8 @@
       tsAnnualSessions,
       tsHeroHours: Math.round(tsTotalHours),
       tsHeroDays: tsTotalDays.toFixed(1),
+      tsWeekHoursLabel: tsWeekHours.toFixed(1),
+      tsMonthHoursLabel: tsMonthHours.toFixed(1),
       tsDriveHoursLabel: (tsDriveMinutesPerYear / 60).toFixed(1),
       tsWaitHoursLabel: (tsWaitMinutesPerYear / 60).toFixed(1),
       membershipLabel: '$' + membership.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
@@ -706,8 +710,10 @@
     el('tsWasteTrack').style.background = vals.tsWasteEnabled ? '#26bf86' : 'rgba(255,255,255,.14)';
     el('tsWasteThumb').style.left = vals.tsWasteEnabled ? '19px' : '3px';
     el('tsWaitRow').style.display = vals.tsWasteEnabled ? 'flex' : 'none';
+    el('tsWeekHours').textContent = vals.tsWeekHoursLabel;
+    el('tsMonthHours').textContent = vals.tsMonthHoursLabel;
     el('tsHeroHours').textContent = vals.tsHeroHours;
-    el('tsHeroDays').textContent = '≈ ' + vals.tsHeroDays + ' full days';
+    el('tsHeroDays').textContent = vals.tsHeroDays;
     el('tsDriveHoursLabel').textContent = vals.tsDriveHoursLabel + ' hrs';
     el('tsWaitHoursLabel').textContent = vals.tsWaitHoursLabel + ' hrs';
     el('tsAnnualSessions').textContent = vals.tsAnnualSessions;

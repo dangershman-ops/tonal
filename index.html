@@ -359,14 +359,26 @@
                 </button>
               </div>
 
-              <!-- hero result -->
+              <!-- hero result: week / month / year breakdown -->
               <div style="margin-top:16px;padding:16px 18px;border-radius:16px;background:linear-gradient(150deg,rgba(81,222,162,.1),rgba(23,28,31,.5));border:1px solid rgba(81,222,162,.28)">
-                <span style="display:block;font-size:10px;font-weight:700;letter-spacing:.14em;color:#86948a;text-transform:uppercase">Time saved per year</span>
-                <div style="display:flex;align-items:baseline;gap:8px;margin-top:8px;flex-wrap:wrap">
-                  <span id="tsHeroHours" style="font-family:'Big Shoulders Display',sans-serif;font-weight:900;font-size:44px;line-height:1;color:#71fbbd">52</span>
-                  <span style="font-family:'Big Shoulders Display',sans-serif;font-weight:700;font-size:14px;color:#dfe3e7">hrs/yr</span>
-                  <span id="tsHeroDays" style="font-size:11px;color:#86948a">≈ 2.2 full days</span>
+                <span style="display:block;font-size:10px;font-weight:700;letter-spacing:.14em;color:#86948a;text-transform:uppercase">Time saved</span>
+                <div style="display:flex;margin-top:12px">
+                  <div style="flex:1;text-align:center">
+                    <div id="tsWeekHours" style="font-family:'Big Shoulders Display',sans-serif;font-weight:900;font-size:24px;line-height:1;color:#71fbbd">1.8</div>
+                    <div style="font-size:9px;color:#86948a;margin-top:5px;text-transform:uppercase;letter-spacing:.05em">hrs / week</div>
+                  </div>
+                  <div style="width:1px;background:rgba(134,148,138,.2);flex:none"></div>
+                  <div style="flex:1;text-align:center">
+                    <div id="tsMonthHours" style="font-family:'Big Shoulders Display',sans-serif;font-weight:900;font-size:24px;line-height:1;color:#71fbbd">7.9</div>
+                    <div style="font-size:9px;color:#86948a;margin-top:5px;text-transform:uppercase;letter-spacing:.05em">hrs / month</div>
+                  </div>
+                  <div style="width:1px;background:rgba(134,148,138,.2);flex:none"></div>
+                  <div style="flex:1;text-align:center">
+                    <div id="tsHeroHours" style="font-family:'Big Shoulders Display',sans-serif;font-weight:900;font-size:24px;line-height:1;color:#71fbbd">95</div>
+                    <div style="font-size:9px;color:#86948a;margin-top:5px;text-transform:uppercase;letter-spacing:.05em">hrs / year</div>
+                  </div>
                 </div>
+                <div style="text-align:center;margin-top:10px;font-size:11px;color:#86948a">≈ <span id="tsHeroDays">2.2</span> full days per year</div>
               </div>
 
               <!-- breakdown -->
