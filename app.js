@@ -10,27 +10,34 @@
     membershipPrice: 59.95,
   };
 
-  // Paste the Google Apps Script Web App URL here (see app/GOOGLE_SHEETS_SETUP.md).
-  // Leave blank to skip logging; the Send flow still works locally either way.
-  const SHEETS_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbzg5uDJ_HtuLQAO2gcgZpmYyuCJfDqBlxd_P4Wvo7L-cUmd1k7bdPwLsI97wFIuPrkspw/exec';
+  // Paste every Google Apps Script Web App URL here (see GOOGLE_SHEETS_SETUP.md).
+  // The quote is logged to EACH url independently (fire-and-forget) — add or
+  // remove entries as needed. Leave the array empty to skip logging entirely.
+  const SHEETS_WEBHOOK_URLS = [
+    'https://script.google.com/macros/s/AKfycbzg5uDJ_HtuLQAO2gcgZpmYyuCJfDqBlxd_P4Wvo7L-cUmd1k7bdPwLsI97wFIuPrkspw/exec', // Sheet 1 (original)
+    'https://script.google.com/macros/s/AKfycbw9ZXb5AoA6lWrbxL3HFKwvaab7v61UICSylPOSUeL7ftjTl6VgS90uZpiufwMymyhD/exec', // Sheet 2 ("test" tab)
+  ];
 
   function logQuoteToSheet(contactMethod, contactValue, store, quoteLines, subtotalPreTax, purchaseLink, parts) {
-    if (!SHEETS_WEBHOOK_URL) return;
+    const urls = SHEETS_WEBHOOK_URLS.filter((u) => u && !u.startsWith('PASTE_'));
+    if (!urls.length) return;
     // Base payload + each link component broken out into its own field (parts),
     // mirroring the URL-generator columns (Agent ID / Trainer / Accessories /
-    // Warranty / Coupon) so the sheet can read or rebuild the link per column.
-    const body = Object.assign({
+    // Warranty / Coupon) so each sheet can read or rebuild the link per column.
+    const body = JSON.stringify(Object.assign({
       contactMethod, contactValue, store, quoteLines,
       subtotalPreTax, totalPrice: subtotalPreTax,
       purchaseLink: purchaseLink || '',
       timestamp: new Date().toISOString(),
-    }, parts || {});
-    fetch(SHEETS_WEBHOOK_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(body),
-    }).catch((err) => console.warn('Sheet logging failed:', err));
+    }, parts || {}));
+    urls.forEach((url) => {
+      fetch(url, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body,
+      }).catch((err) => console.warn('Sheet logging failed for ' + url + ':', err));
+    });
   }
 
   const BUNDLES = [
@@ -266,6 +273,10 @@
       : trainerPrice * (discountPct / 100));
     const subtotal = (trainerPrice - discountAmount) + bundlePrice + shippingCost + warrantyPrice;
     const subtotalNoShipping = (trainerPrice - discountAmount) + bundlePrice + warrantyPrice;
+    // excludes shipping AND the manual discount; used only for the sheet log, never shown on-screen
+    const subtotalNoShipDiscount = trainerPrice + bundlePrice + warrantyPrice;
+    const discountLabel = discountMode === 'dollar' ? 'Trainer discount' : 'Trainer discount (' + discountPct + '%)';
+    const discountDescription = discountAmount > 0 ? (discountLabel + ': -' + fmt(discountAmount)) : '';
     const taxPct = s.taxPct;
     const taxAmount = subtotal * (taxPct / 100);
     const allIn = subtotal + taxAmount;
@@ -357,7 +368,7 @@
     const recapValue = isRent ? fmt(rentInfo.promo) + '/mo' : fmt(allIn);
     const logValue = isRent
       ? fmt(rentInfo.promo) + '/mo (first 3 months, then ' + fmt(rentInfo.regular) + '/mo)'
-      : fmt(subtotalNoShipping);
+      : fmt(subtotalNoShipDiscount);
 
     return {
       step: s.step,
@@ -367,12 +378,15 @@
       allInLabel: fmt(allIn),
       subtotal,
       subtotalLabel: fmt(subtotal),
+      subtotalNoShipDiscount,
+      discountDescription,
       isRent,
       sendSummary,
       recapValue,
       logValue,
       bundleObj,
       shipObj,
+      warrantyObj,
       summary,
       taxPct,
       taxPctLabel,
@@ -717,20 +731,30 @@
       case 'sendQuote': {
         const vals = computeVals();
         if (vals.contactValid && vals.storeValid) {
-          // Follow the chosen buy/rent mode; for buy, exclude the estimated tax line.
-          const quoteLines = vals.sendSummary
-            .filter((r) => !r.label.startsWith('Est. sales tax'))
-            .map((r) => r.label + ': ' + r.value)
-            .join(' + ');
+          // Quote Details logged to the sheet excludes tax, shipping, AND the manual
+          // discount (the on-screen quote the customer sees is unaffected — this is
+          // a sheet-only view). The discount is instead carried in the coupon field
+          // below so reps can still see what to quote the customer.
+          const quoteLines = vals.isRent
+            ? vals.sendSummary.map((r) => r.label + ': ' + r.value).join(' + ')
+            : [
+                { label: vals.trainerName + ' trainer', value: fmt(vals.trainerPrice) },
+                { label: vals.bundleObj.name, value: fmt(vals.bundleObj.price) },
+                { label: vals.warrantyObj.name, value: fmt(vals.warrantyPrice) },
+                { label: 'Subtotal (pre-tax, shipping and discount)', value: fmt(vals.subtotalNoShipDiscount) },
+              ].map((r) => r.label + ': ' + r.value).join(' + ');
           // each checkout-link component in its own field (blank for the parts a
           // rental link doesn't carry) so the sheet mirrors the URL-generator columns
+          const couponBits = [];
+          if (!vals.isRent && vals.discountDescription) couponBits.push(vals.discountDescription);
+          if (!vals.isRent && state.coupon) couponBits.push('Coupon: ' + state.coupon);
           const parts = {
             agentId: state.repAgent || '',
             mode: vals.isRent ? 'Rent' : 'Buy',
             trainer: vals.isTonal2 ? 'Tonal 2' : 'Tonal 1 - Certified Refurbished',
             accessories: vals.isRent ? '' : ((BUNDLES.find((b) => b.key === state.bundle) || {}).name || ''),
             warranty: vals.isRent ? '' : ((WARRANTY.find((w) => w.key === state.warranty) || {}).name || ''),
-            coupon: vals.isRent ? '' : (state.coupon || ''),
+            coupon: couponBits.join('; '),
           };
           logQuoteToSheet(vals.contactMethod, vals.contactValue.trim(), vals.storeNameLabel, quoteLines, vals.logValue, buildPurchaseLink(vals), parts);
           setState({ sent: true });
