@@ -40,29 +40,39 @@ Columns stay in the order already deployed there:
 A Timestamp | B Contact Method | C Contact Info | D Quote Details (Pre-Tax, Shipping and Discount) | E Subtotal (Pre-Tax, Shipping and Discount) | F Store | G Purchase Link | H Agent ID | I Mode | J Trainer | K Accessories | L Warranty | M Coupon
 ```
 
-Its `doPost` (unchanged):
+Its `doPost`:
 
 ```javascript
 function doPost(e) {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
   var data = JSON.parse(e.postData.contents);
   sheet.appendRow([
-    new Date(data.timestamp || Date.now()),        // A Timestamp
-    data.contactMethod || '',                       // B Contact Method
-    data.contactValue || '',                        // C Contact Info
-    data.quoteLines || '',                          // D Quote Details (Pre-Tax, Shipping and Discount)
-    data.subtotalPreTax || data.totalPrice || '',   // E Subtotal (Pre-Tax, Shipping and Discount)
-    data.store || '',                               // F Store
-    data.purchaseLink || '',                        // G Purchase Link
-    data.agentId || '',                             // H Agent ID
-    data.mode || '',                                // I Mode
-    data.trainer || '',                             // J Trainer
-    data.accessories || '',                         // K Accessories
-    data.warranty || '',                            // L Warranty
-    data.coupon || '',                              // M Coupon
+    new Date(data.timestamp || Date.now()),                    // A Timestamp
+    sanitize(data.contactMethod),                                // B Contact Method
+    sanitize(data.contactValue),                                  // C Contact Info
+    sanitize(data.quoteLines),                                    // D Quote Details (Pre-Tax, Shipping and Discount)
+    sanitize(data.subtotalPreTax || data.totalPrice),            // E Subtotal (Pre-Tax, Shipping and Discount)
+    sanitize(data.store),                                         // F Store
+    sanitize(data.purchaseLink),                                  // G Purchase Link
+    sanitize(data.agentId),                                       // H Agent ID
+    sanitize(data.mode),                                          // I Mode
+    sanitize(data.trainer),                                       // J Trainer
+    sanitize(data.accessories),                                   // K Accessories
+    sanitize(data.warranty),                                      // L Warranty
+    sanitize(data.coupon),                                        // M Coupon
   ]);
   return ContentService.createTextOutput(JSON.stringify({ status: 'ok' }))
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+// Anyone can POST directly to this URL (it's public and unauthenticated), so
+// every incoming field is untrusted. A string starting with =, +, -, or @ is
+// interpreted by Sheets as a formula when written via appendRow/setValue —
+// prefixing it with a single quote forces it to be stored as literal text
+// instead (the same convention as typing '=SUM(...) manually into a cell).
+function sanitize(v) {
+  var s = String(v == null ? '' : v);
+  return /^[=+\-@]/.test(s) ? ("'" + s) : s;
 }
 ```
 
@@ -84,22 +94,28 @@ function doPost(e) {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('test');
   var data = JSON.parse(e.postData.contents);
   sheet.appendRow([
-    data.store || '',                               // A Store
-    data.agentId || '',                              // B Agent ID
-    new Date(data.timestamp || Date.now()),          // C Timestamp
-    data.contactMethod || '',                        // D Contact Method
-    data.contactValue || '',                         // E Contact Info
-    data.quoteLines || '',                           // F Quote Details (Pre-Tax, Shipping and Discount)
-    data.subtotalPreTax || data.totalPrice || '',    // G Subtotal (Pre-Tax, Shipping and Discount)
-    data.purchaseLink || '',                         // H Purchase Link
-    data.mode || '',                                 // I Mode
-    data.trainer || '',                              // J Trainer
-    data.accessories || '',                          // K Accessories
-    data.warranty || '',                             // L Warranty
-    data.coupon || '',                               // M Coupon
+    sanitize(data.store),                                         // A Store
+    sanitize(data.agentId),                                       // B Agent ID
+    new Date(data.timestamp || Date.now()),                      // C Timestamp
+    sanitize(data.contactMethod),                                  // D Contact Method
+    sanitize(data.contactValue),                                    // E Contact Info
+    sanitize(data.quoteLines),                                      // F Quote Details (Pre-Tax, Shipping and Discount)
+    sanitize(data.subtotalPreTax || data.totalPrice),              // G Subtotal (Pre-Tax, Shipping and Discount)
+    sanitize(data.purchaseLink),                                    // H Purchase Link
+    sanitize(data.mode),                                            // I Mode
+    sanitize(data.trainer),                                         // J Trainer
+    sanitize(data.accessories),                                     // K Accessories
+    sanitize(data.warranty),                                        // L Warranty
+    sanitize(data.coupon),                                          // M Coupon
   ]);
   return ContentService.createTextOutput(JSON.stringify({ status: 'ok' }))
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+// See the sanitize() note under Sheet 1 — same reasoning applies here.
+function sanitize(v) {
+  var s = String(v == null ? '' : v);
+  return /^[=+\-@]/.test(s) ? ("'" + s) : s;
 }
 ```
 
