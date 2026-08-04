@@ -23,7 +23,7 @@
     if (!urls.length) return;
     // Base payload + each link component broken out into its own field (parts),
     // mirroring the URL-generator columns (Agent ID / Trainer / Accessories /
-    // Warranty / Coupon) so each sheet can read or rebuild the link per column.
+    // Warranty / Discount Applied) so each sheet can read or rebuild the link per column.
     const body = JSON.stringify(Object.assign({
       contactMethod, contactValue, store, quoteLines,
       subtotalPreTax, totalPrice: subtotalPreTax,
@@ -130,15 +130,12 @@
     }
     const warrantyCode = PRODUCT_CODES.warranty[state.warranty];
     if (warrantyCode) segs.push(warrantyCode + ':1');
-    // param order matches the roster's URL-generator formula exactly:
-    // discount (if any) first, then location, then showroom_agent, then storefront.
-    const coupon = (state.coupon || '').trim();
-    let url = 'https://www.tonal.com/cart/' + segs.join(',');
-    url += (coupon ? '?discount=' + encodeURIComponent(coupon) : '?attributes[location]=' + encodeURIComponent(loc));
-    if (coupon) url += '&attributes[location]=' + encodeURIComponent(loc);
-    url += '&attributes[showroom_agent]=' + encodeURIComponent(agent);
-    url += '&storefront=true';
-    return url;
+    // no real discount code is ever put in this link — the on-screen discount
+    // is a quoted-price adjustment only, not an actual redeemable checkout code.
+    return 'https://www.tonal.com/cart/' + segs.join(',') +
+      '?attributes[location]=' + encodeURIComponent(loc) +
+      '&attributes[showroom_agent]=' + encodeURIComponent(agent) +
+      '&storefront=true';
   }
 
   const H_LABELS = { 1: 'Just me', 2: 'Me & my partner', 3: 'Small family', 4: 'Small family', 5: 'Whole family', 6: 'Whole family' };
@@ -218,13 +215,13 @@
     discountPct: 0,
     discountDollar: 0,
     discountOpen: false,
+    discountTarget: 'trainer',   // 'trainer' | 'bundle' — which line item the discount applies to
     household: 1,
     compareTab: 'membership',
     contactMethod: 'email',
     contactValue: '',
     store: '',
     repAgent: '',
-    coupon: '',           // coupon code that goes into the checkout link
     sent: false,
   };
 
@@ -265,18 +262,25 @@
     const warrantyPrice = warrantyObj.price;
 
     // ---- totals ----
+    // discount is Tonal 2 only, and applies to whichever line item (trainer or
+    // accessories bundle) is picked in the target dropdown.
     const discountMode = s.discountMode;
     const discountPct = s.discountPct;
     const discountDollar = s.discountDollar;
+    const discountTarget = s.discountTarget === 'bundle' ? 'bundle' : 'trainer';
+    const discountTargetPrice = discountTarget === 'bundle' ? bundlePrice : trainerPrice;
     const discountAmount = !isTonal2 ? 0 : (discountMode === 'dollar'
-      ? Math.min(discountDollar, trainerPrice)
-      : trainerPrice * (discountPct / 100));
-    const subtotal = (trainerPrice - discountAmount) + bundlePrice + shippingCost + warrantyPrice;
-    const subtotalNoShipping = (trainerPrice - discountAmount) + bundlePrice + warrantyPrice;
+      ? Math.min(discountDollar, discountTargetPrice)
+      : discountTargetPrice * (discountPct / 100));
+    const trainerAfterDiscount = trainerPrice - (discountTarget === 'trainer' ? discountAmount : 0);
+    const bundleAfterDiscount = bundlePrice - (discountTarget === 'bundle' ? discountAmount : 0);
+    const subtotal = trainerAfterDiscount + bundleAfterDiscount + shippingCost + warrantyPrice;
+    const subtotalNoShipping = trainerAfterDiscount + bundleAfterDiscount + warrantyPrice;
     // excludes shipping AND the manual discount; used only for the sheet log, never shown on-screen
     const subtotalNoShipDiscount = trainerPrice + bundlePrice + warrantyPrice;
-    const discountLabel = discountMode === 'dollar' ? 'Trainer discount' : 'Trainer discount (' + discountPct + '%)';
-    const discountDescription = discountAmount > 0 ? (discountLabel + ': -' + fmt(discountAmount)) : '';
+    const discountTargetLabel = discountTarget === 'bundle' ? 'Accessories discount' : 'Trainer discount';
+    const discLabel = discountMode === 'dollar' ? discountTargetLabel : discountTargetLabel + ' (' + discountPct + '%)';
+    const discountDescription = discountAmount > 0 ? (discLabel + ': -' + fmt(discountAmount)) : '';
     const taxPct = s.taxPct;
     const taxAmount = subtotal * (taxPct / 100);
     const allIn = subtotal + taxAmount;
@@ -285,12 +289,14 @@
     const summary = [
       { label: trainerName + ' trainer', value: fmt(trainerPrice) },
     ];
-    if (discountAmount > 0) {
-      const discLabel = discountMode === 'dollar' ? 'Trainer discount' : 'Trainer discount (' + discountPct + '%)';
+    if (discountAmount > 0 && discountTarget === 'trainer') {
+      summary.push({ label: discLabel, value: '-' + fmt(discountAmount) });
+    }
+    summary.push({ label: bundleObj.name, value: fmt(bundlePrice) });
+    if (discountAmount > 0 && discountTarget === 'bundle') {
       summary.push({ label: discLabel, value: '-' + fmt(discountAmount) });
     }
     summary.push(
-      { label: bundleObj.name, value: fmt(bundlePrice) },
       { label: shipObj.label + ' shipping & install', value: fmt(shippingCost) },
       { label: warrantyObj.name, value: fmt(warrantyPrice) },
       { label: 'Subtotal (pre-tax)', value: fmt(subtotal) },
@@ -394,6 +400,8 @@
       discountPct,
       discountDollar,
       discountAmount,
+      discountTarget,
+      discountTargetPrice,
       discountOpen: s.discountOpen,
       warrantyPrice,
       warrantyOpen: s.warrantyOpen,
@@ -536,7 +544,7 @@
     el('discModeDollarBtn').style.color = isDollar ? '#051512' : '#86948a';
     el('discountPctSuffix').style.display = isDollar ? 'none' : 'inline';
     el('discountDollarPrefix').style.display = isDollar ? 'inline' : 'none';
-    const max = isDollar ? vals.trainerPrice : 30;
+    const max = isDollar ? vals.discountTargetPrice : 30;
     el('discountRange').max = max;
     el('discountRange').step = isDollar ? 25 : 1;
     el('discountMinLabel').textContent = isDollar ? '$0' : '0%';
@@ -583,17 +591,13 @@
     el('warrantyControls').style.display = vals.warrantyOpen ? 'block' : 'none';
     el('warrantyToggleIcon').textContent = vals.warrantyOpen ? '−' : '+';
     el('warrantyCollapsedValue').textContent = (!vals.warrantyOpen && vals.warrantyPrice > 0) ? fmt(vals.warrantyPrice) : '';
-    // discount/coupon section: block always shows; the %/$ manual discount is Tonal 2 only,
-    // the coupon code applies to both trainers.
+    // discount section: Tonal 2 only, applies to whichever line item is picked in the target dropdown
+    el('discountBlock').style.display = vals.isTonal2 ? 'block' : 'none';
     el('discountControls').style.display = vals.discountOpen ? 'block' : 'none';
-    el('manualDiscountRow').style.display = vals.isTonal2 ? 'block' : 'none';
     el('discountToggleIcon').textContent = vals.discountOpen ? '−' : '+';
-    let discountCollapsed = '';
-    if (vals.discountAmount > 0) discountCollapsed = '-' + fmt(vals.discountAmount);
-    else if (state.coupon) discountCollapsed = state.coupon;
+    const discountCollapsed = vals.discountAmount > 0 ? '-' + fmt(vals.discountAmount) : '';
     el('discountCollapsedValue').textContent = !vals.discountOpen ? discountCollapsed : '';
-    const couponCodeInput = el('couponCodeInput');
-    if (couponCodeInput && document.activeElement !== couponCodeInput) couponCodeInput.value = state.coupon;
+    el('discountTargetSelect').value = vals.discountTarget;
     if (document.activeElement !== el('taxPctInput')) el('taxPctInput').value = vals.taxPctLabel;
     el('taxStateSelect').value = state.taxState;
     syncDiscountModeUI(vals);
@@ -733,8 +737,8 @@
         if (vals.contactValid && vals.storeValid) {
           // Quote Details logged to the sheet excludes tax, shipping, AND the manual
           // discount (the on-screen quote the customer sees is unaffected — this is
-          // a sheet-only view). The discount is instead carried in the coupon field
-          // below so reps can still see what to quote the customer.
+          // a sheet-only view). The discount is instead carried in the Discount
+          // Applied field below so reps can still see what to quote the customer.
           const quoteLines = vals.isRent
             ? vals.sendSummary.map((r) => r.label + ': ' + r.value).join(' + ')
             : [
@@ -745,16 +749,13 @@
               ].map((r) => r.label + ': ' + r.value).join(' + ');
           // each checkout-link component in its own field (blank for the parts a
           // rental link doesn't carry) so the sheet mirrors the URL-generator columns
-          const couponBits = [];
-          if (!vals.isRent && vals.discountDescription) couponBits.push(vals.discountDescription);
-          if (!vals.isRent && state.coupon) couponBits.push('Coupon: ' + state.coupon);
           const parts = {
             agentId: state.repAgent || '',
             mode: vals.isRent ? 'Rent' : 'Buy',
             trainer: vals.isTonal2 ? 'Tonal 2' : 'Tonal 1 - Certified Refurbished',
             accessories: vals.isRent ? '' : ((BUNDLES.find((b) => b.key === state.bundle) || {}).name || ''),
             warranty: vals.isRent ? '' : ((WARRANTY.find((w) => w.key === state.warranty) || {}).name || ''),
-            coupon: couponBits.join('; '),
+            discountApplied: (!vals.isRent && vals.discountDescription) ? vals.discountDescription : '',
           };
           logQuoteToSheet(vals.contactMethod, vals.contactValue.trim(), vals.storeNameLabel, quoteLines, vals.logValue, buildPurchaseLink(vals), parts);
           setState({ sent: true });
@@ -762,10 +763,9 @@
         break;
       }
       case 'restart':
-        // keep rep context (agent id + store); clear the customer's details + coupon
-        setState({ step: 0, sent: false, contactValue: '', coupon: '' });
+        // keep rep context (agent id + store); clear only the customer's details
+        setState({ step: 0, sent: false, contactValue: '' });
         el('emailInput').value = '';
-        if (el('couponCodeInput')) el('couponCodeInput').value = '';
         break;
     }
   });
@@ -829,10 +829,8 @@
     saveRep(rep);
   });
 
-  el('couponCodeInput').addEventListener('input', (e) => {
-    const clean = e.target.value.toUpperCase().replace(/\s/g, '');
-    if (e.target.value !== clean) e.target.value = clean;
-    state.coupon = clean;
+  el('discountTargetSelect').addEventListener('change', (e) => {
+    setState({ discountTarget: e.target.value });
   });
 
   // populate the membership member-vs-non-member comparison once
