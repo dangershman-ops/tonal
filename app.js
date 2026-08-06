@@ -58,8 +58,8 @@
   ];
 
   const RENT = {
-    tonal2: { promo: 219, regular: 279, savingsMo: 60, savingsTotal: 180 },
-    tonal1: { promo: 159, regular: 219, savingsMo: 60, savingsTotal: 180 },
+    tonal2: { regular: 279, freeMonths: 1 },
+    tonal1: { regular: 219, freeMonths: 1 },
   };
 
   // ---- purchase-link attribution (tonal.com checkout) ----
@@ -178,7 +178,7 @@
   const TS_WASTE_MINUTES_PER_SESSION = 7.5; // avg setup/wait time added per gym session
   const HERO_DISCOUNT_AMOUNT = 500; // fixed hero discount, Tonal 2 only
   const AVG_SALES_TAX_PCT = 5.09; // simple average of state-only rates, all 50 states + DC, Tax Foundation Jan 2026 data
-  const INFO_PAGE_IDS = ['accessoriesPage', 'warrantyPage', 'installationPage', 'membershipPage'];
+  const INFO_PAGE_IDS = ['accessoriesPage', 'warrantyPage', 'installationPage', 'membershipPage', 'financingPage'];
 
   // State-only sales tax rate by state, Tax Foundation Jan 2026 data
   const STATE_TAX = [
@@ -251,6 +251,7 @@
     discountOpen: false,
     discountTarget: 'trainer',   // 'trainer' | 'bundle' — which line item the discount applies to
     heroDiscountApplied: false, // $500 off Tonal 2, independent of the manual discount above
+    heroDiscountCategory: 'Military', // 'Military' | 'First Responder' | 'Healthcare Worker' | 'Teacher'
     household: 1,
     compareTab: 'membership',   // 'membership' | 'homeGym' | 'timeSavings'
     tsSessionsPerWeek: 4,
@@ -312,9 +313,10 @@
     const discountAmount = !isTonal2 ? 0 : (discountMode === 'dollar'
       ? Math.min(discountDollar, discountTargetPrice)
       : discountTargetPrice * (discountPct / 100));
-    // hero discount: fixed $500 off, Tonal 2 only, independent of the manual discount above
+    // heroes discount: fixed $500 off, Tonal 2 only, independent of the manual discount above
     const heroDiscountAmount = (isTonal2 && s.heroDiscountApplied) ? HERO_DISCOUNT_AMOUNT : 0;
-    const heroDiscountDescription = heroDiscountAmount > 0 ? ('Hero discount ($500 off Tonal 2): -' + fmt(heroDiscountAmount)) : '';
+    const heroDiscountLabel = 'Heroes Discount (' + s.heroDiscountCategory + ')';
+    const heroDiscountDescription = heroDiscountAmount > 0 ? (heroDiscountLabel + ': -' + fmt(heroDiscountAmount)) : '';
     const trainerAfterDiscount = trainerPrice - (discountTarget === 'trainer' ? discountAmount : 0) - heroDiscountAmount;
     const bundleAfterDiscount = bundlePrice - (discountTarget === 'bundle' ? discountAmount : 0);
     const subtotal = trainerAfterDiscount + bundleAfterDiscount + shippingCost + warrantyPrice;
@@ -333,7 +335,7 @@
       { label: trainerName + ' trainer', value: fmt(trainerPrice) },
     ];
     if (heroDiscountAmount > 0) {
-      summary.push({ label: 'Hero discount ($500 off Tonal 2)', value: '-' + fmt(heroDiscountAmount) });
+      summary.push({ label: heroDiscountLabel, value: '-' + fmt(heroDiscountAmount) });
     }
     if (discountAmount > 0 && discountTarget === 'trainer') {
       summary.push({ label: discLabel, value: '-' + fmt(discountAmount) });
@@ -404,12 +406,12 @@
     const rentInfo = RENT[s.trainer];
 
     // ---- compare: rent vs personal training (2x/week) ----
-    const rentMo = rentInfo.promo;
+    const rentMo = rentInfo.regular;
     const rentTrainerMo = SESS_RATE * 8 * N;
     const rentVsTrainerMax = Math.max(rentMo, rentTrainerMo);
     const rentBarPct = (v) => Math.max(7, Math.round((v / rentVsTrainerMax) * 100));
     const rentCompareColumns = [
-      { label: 'Rent ' + trainerName, sub: 'First 3 months · membership included', note: '', valueLabel: fmt(rentMo) + '/mo', valColor: '#51dea2', barPct: rentBarPct(rentMo), barBg: 'linear-gradient(180deg,#71fbbd,#26bf86)', barGlow: '0 0 28px rgba(81,222,162,.4)' },
+      { label: 'Rent ' + trainerName, sub: 'First month free · membership included', note: '', valueLabel: fmt(rentMo) + '/mo', valColor: '#51dea2', barPct: rentBarPct(rentMo), barBg: 'linear-gradient(180deg,#71fbbd,#26bf86)', barGlow: '0 0 28px rgba(81,222,162,.4)' },
       { label: 'Personal Trainer', sub: '$65/hr · 2x/week', note: 'according to NESTA certified', valueLabel: fmt(rentTrainerMo) + '/mo', valColor: '#e88a8e', barPct: rentBarPct(rentTrainerMo), barBg: 'linear-gradient(180deg,#c54e53,#7e2f33)', barGlow: 'none' },
     ];
     const rentTrainerDiff = rentTrainerMo - rentMo;
@@ -417,20 +419,19 @@
     const rentSavesLabel = '$' + Math.round(Math.abs(rentTrainerDiff));
     const rentSavesCopy = rentSavesPositive
       ? 'less/mo than a personal trainer, and you keep unlimited access at home, every day.'
-      : 'more/mo than a personal trainer for the first 3 months, but you get unlimited training, every day, at home.';
+      : 'more/mo than a personal trainer, but you get unlimited training, every day, at home.';
 
     // ---- quote that follows the chosen buy/rent mode ----
     const isRent = s.purchaseMode === 'rent';
     const rentSummary = [
-      { label: trainerName + ' rental · first 3 months', value: fmt(rentInfo.promo) + '/mo' },
-      { label: 'Regular rate (month 4+)', value: fmt(rentInfo.regular) + '/mo' },
+      { label: trainerName + ' rental', value: fmt(rentInfo.regular) + '/mo' },
+      { label: 'First month', value: 'Free' },
       { label: 'Membership', value: 'Included' },
-      { label: 'You save', value: fmt(rentInfo.savingsMo) + '/mo for 3 mo' },
     ];
     const sendSummary = isRent ? rentSummary : summary;
-    const recapValue = isRent ? fmt(rentInfo.promo) + '/mo' : fmt(allIn);
+    const recapValue = isRent ? fmt(rentInfo.regular) + '/mo' : fmt(allIn);
     const logValue = isRent
-      ? fmt(rentInfo.promo) + '/mo (first 3 months, then ' + fmt(rentInfo.regular) + '/mo)'
+      ? fmt(rentInfo.regular) + '/mo (first month free)'
       : fmt(subtotalNoShipDiscount);
 
     return {
@@ -448,6 +449,7 @@
       heroDiscountAmount,
       heroDiscountDescription,
       heroDiscountApplied: s.heroDiscountApplied,
+      heroDiscountCategory: s.heroDiscountCategory,
       isRent,
       sendSummary,
       recapValue,
@@ -609,6 +611,28 @@
       </div>`).join('');
   }
 
+  function renderFinancingPlans(amount) {
+    const container = el('financingPlans');
+    if (!amount || amount <= 0) { container.innerHTML = ''; return; }
+    const fmt2 = (n) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    container.innerHTML = [12, 24, 36].map((mo) => {
+      const monthly = amount / mo;
+      return `
+      <div style="background:linear-gradient(145deg,rgba(23,29,33,.95),rgba(15,20,23,.97));border:1px solid rgba(134,148,138,.16);border-radius:16px;padding:16px 18px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <span style="font-family:'Big Shoulders Display',sans-serif;font-weight:900;font-size:24px;color:#f1f5f3">$${fmt2(monthly)}<span style="font-family:'Inter',sans-serif;font-weight:500;font-size:12px;color:#86948a;margin-left:4px">/mo</span></span>
+          <span style="background:#51dea2;color:#041a0f;font-size:10.5px;font-weight:800;letter-spacing:.05em;border-radius:999px;padding:4px 11px">${mo} months</span>
+        </div>
+        <div style="height:1px;background:rgba(134,148,138,.1);margin:8px 0"></div>
+        <div style="display:flex;flex-direction:column;gap:5px">
+          <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:#86948a">APR</span><span style="color:#51dea2;font-weight:600">0.00%</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:#86948a">Interest</span><span style="color:#51dea2;font-weight:600">$0.00</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:#86948a">Total of payments</span><span style="color:#c8d4cc;font-weight:600">$${fmt2(amount)}</span></div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
   function syncDiscountModeUI(vals) {
     const isDollar = vals.discountMode === 'dollar';
     el('discModePctBtn').style.background = isDollar ? 'transparent' : '#51dea2';
@@ -651,18 +675,18 @@
 
     // ---- price screen: rent flow ----
     el('rentTrainerName').textContent = vals.trainerName;
-    el('rentPromoPrice').textContent = fmt(vals.rentInfo.promo);
     el('rentRegularPrice').textContent = fmt(vals.rentInfo.regular);
-    el('rentSavingsMo').textContent = fmt(vals.rentInfo.savingsMo);
-    el('rentSavingsTotal').textContent = fmt(vals.rentInfo.savingsTotal);
+    el('rentFreeMonthValue').textContent = fmt(vals.rentInfo.regular);
 
     // ---- price screen: buy flow ----
     el('switchLabel').textContent = vals.switchLabel;
     el('allInHero').textContent = vals.allInLabel;
     el('financing36MoLabel').textContent = vals.financing36MoLabel;
-    el('heroDiscountRow').style.display = vals.isTonal2 ? 'flex' : 'none';
+    el('heroDiscountRow').style.display = vals.isTonal2 ? 'block' : 'none';
     el('heroDiscountTrack').style.background = vals.heroDiscountApplied ? '#26bf86' : 'rgba(255,255,255,.14)';
     el('heroDiscountThumb').style.left = vals.heroDiscountApplied ? '21px' : '3px';
+    el('heroDiscountCategorySelect').style.display = vals.heroDiscountApplied ? 'block' : 'none';
+    el('heroDiscountCategorySelect').value = vals.heroDiscountCategory;
     renderBundleList(vals);
     renderShippingList();
     renderWarrantyList('warrantyListAlways');
@@ -688,8 +712,6 @@
     renderSummaryRows('summaryListPrice', vals.summary);
     el('allInTotalPrice').textContent = vals.allInLabel;
     el('tonal1Compare').style.display = vals.isTonal1 ? 'block' : 'none';
-    const financingLink = document.getElementById('financingLink');
-    if (financingLink) financingLink.href = 'financing.html?amount=' + Math.round(vals.allIn);
 
     // ---- compare screen: buy vs rent view ----
     el('compareBuyView').style.display = vals.purchaseMode === 'rent' ? 'none' : 'flex';
@@ -738,7 +760,7 @@
 
     // ---- compare screen: rent view ----
     el('rentCompareTrainerName').textContent = vals.trainerName;
-    el('rentCompareMoLabel').textContent = fmt(vals.rentInfo.promo);
+    el('rentCompareMoLabel').textContent = fmt(vals.rentInfo.regular);
     renderColumns('rentCompareColumns', vals.rentCompareColumns);
     const rentCallout = el('rentSavesCallout');
     rentCallout.style.background = vals.rentSavesCalloutBg;
@@ -839,6 +861,11 @@
       case 'openInfoPage':
         INFO_PAGE_IDS.forEach((id) => { el(id).style.display = 'none'; });
         el(value + 'Page').style.display = 'block';
+        if (value === 'financing') {
+          const amt = Math.round(computeVals().allIn);
+          el('financingAmountInput').value = amt;
+          renderFinancingPlans(amt);
+        }
         break;
       case 'closeInfoPage':
         INFO_PAGE_IDS.forEach((id) => { el(id).style.display = 'none'; });
@@ -936,6 +963,14 @@
 
   el('discountTargetSelect').addEventListener('change', (e) => {
     setState({ discountTarget: e.target.value });
+  });
+
+  el('heroDiscountCategorySelect').addEventListener('change', (e) => {
+    setState({ heroDiscountCategory: e.target.value });
+  });
+
+  el('financingAmountInput').addEventListener('input', (e) => {
+    renderFinancingPlans(parseFloat(e.target.value) || 0);
   });
 
   el('tsSessionsRange').addEventListener('input', (e) => {
