@@ -167,20 +167,6 @@
     return { quoteLines, parts };
   }
 
-  function fallbackCopy(text, cb) {
-    try {
-      const ta = document.createElement('textarea');
-      ta.value = text;
-      ta.style.position = 'fixed';
-      ta.style.opacity = '0';
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand('copy');
-      document.body.removeChild(ta);
-      if (cb) cb();
-    } catch (e) { /* no-op */ }
-  }
-
   const H_LABELS = { 1: 'Just me', 2: 'Me & my partner', 3: 'Small family', 4: 'Small family', 5: 'Whole family', 6: 'Whole family' };
 
   const GYM_PP = 65;     // $/mo per person, U.S. Health & Fitness Association
@@ -272,7 +258,6 @@
     repAgent: '',
     sent: false,
     skippedContact: false,   // true when sent via the "skip" button (no email/text collected)
-    linkRevealOpen: false,   // on-screen purchase-link reveal, toggled by "Show purchase link"
   };
 
   // restore persisted rep identity (agent id + store location code)
@@ -444,6 +429,7 @@
       isTonal1: !isTonal2,
       allIn,
       allInLabel: fmt(allIn),
+      financing36MoLabel: fmt(allIn / 36),
       subtotal,
       subtotalLabel: fmt(subtotal),
       subtotalNoShipDiscount,
@@ -659,6 +645,7 @@
     // ---- price screen: buy flow ----
     el('switchLabel').textContent = vals.switchLabel;
     el('allInHero').textContent = vals.allInLabel;
+    el('financing36MoLabel').textContent = vals.financing36MoLabel;
     renderBundleList(vals);
     renderShippingList();
     renderWarrantyList('warrantyListAlways');
@@ -765,14 +752,6 @@
     if (repAgentInput && document.activeElement !== repAgentInput) repAgentInput.value = state.repAgent;
     updateContactDependent(vals);
 
-    // on-screen purchase-link reveal (Checkout link card)
-    el('showLinkBtn').textContent = state.linkRevealOpen ? 'Hide purchase link' : 'Show purchase link';
-    el('purchaseLinkReveal').style.display = state.linkRevealOpen ? 'block' : 'none';
-    if (state.linkRevealOpen) {
-      const link = buildPurchaseLink(vals);
-      el('purchaseLinkText').textContent = link || 'Enter your Agent ID and select a store above to generate the link.';
-    }
-
     el('notSentPanel').style.display = state.sent ? 'none' : 'flex';
     el('sentPanel').style.display = state.sent ? 'flex' : 'none';
     el('sentTrainerName').textContent = vals.trainerName;
@@ -803,6 +782,7 @@
     if (document.activeElement !== el('discountValueInput')) el('discountValueInput').value = discountDisplayValue;
     if (document.activeElement !== el('discountRange')) el('discountRange').value = discountDisplayValue;
     el('allInHero').textContent = vals.allInLabel;
+    el('financing36MoLabel').textContent = vals.financing36MoLabel;
     el('allInTotalPrice').textContent = vals.allInLabel;
     renderSummaryRows('summaryListPrice', vals.summary);
     renderSendSummaryRows('summaryListSend', vals.sendSummary);
@@ -860,24 +840,6 @@
           const { quoteLines, parts } = buildQuoteLinesAndParts(vals);
           logQuoteToSheet('', '', vals.storeNameLabel, quoteLines, vals.logValue, buildPurchaseLink(vals), parts);
           setState({ sent: true, skippedContact: true });
-        }
-        break;
-      }
-      case 'togglePurchaseLinkVisible': setState({ linkRevealOpen: !state.linkRevealOpen }); break;
-      case 'copyPurchaseLink': {
-        const url = buildPurchaseLink(computeVals());
-        if (!url) break;
-        const done = () => {
-          const b = el('copyLinkBtn');
-          if (!b) return;
-          const orig = b.textContent;
-          b.textContent = 'Copied ✓';
-          setTimeout(() => { b.textContent = orig; }, 1800);
-        };
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(url).then(done).catch(() => fallbackCopy(url, done));
-        } else {
-          fallbackCopy(url, done);
         }
         break;
       }
@@ -951,11 +913,7 @@
     const rep = loadRep();
     rep.agent = state.repAgent;
     saveRep(rep);
-    const vals = computeVals();
-    updateContactDependent(vals);
-    if (state.linkRevealOpen) {
-      el('purchaseLinkText').textContent = buildPurchaseLink(vals) || 'Enter your Agent ID and select a store above to generate the link.';
-    }
+    updateContactDependent(computeVals());
   });
 
   el('discountTargetSelect').addEventListener('change', (e) => {
