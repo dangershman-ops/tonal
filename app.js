@@ -155,13 +155,16 @@
         ].map((r) => r.label + ': ' + r.value).join(' + ');
     // each checkout-link component in its own field (blank for the parts a
     // rental link doesn't carry) so the sheet mirrors the URL-generator columns
+    const discBits = [];
+    if (!vals.isRent && vals.heroDiscountDescription) discBits.push(vals.heroDiscountDescription);
+    if (!vals.isRent && vals.discountDescription) discBits.push(vals.discountDescription);
     const parts = {
       agentId: state.repAgent || '',
       mode: vals.isRent ? 'Rent' : 'Buy',
       trainer: vals.isTonal2 ? 'Tonal 2' : 'Tonal 1 - Certified Refurbished',
       accessories: vals.isRent ? '' : ((BUNDLES.find((b) => b.key === state.bundle) || {}).name || ''),
       warranty: vals.isRent ? '' : ((WARRANTY.find((w) => w.key === state.warranty) || {}).name || ''),
-      discountApplied: (!vals.isRent && vals.discountDescription) ? vals.discountDescription : '',
+      discountApplied: discBits.join('; '),
       customerFirstName: (state.contactFirstName || '').trim(),
     };
     return { quoteLines, parts };
@@ -173,6 +176,7 @@
   const SESS_RATE = 65;  // $/hr, NESTA certified
   const HOME_GYM_HIGH = 25000; // top of $7K-$25K range, RitFit
   const TS_WASTE_MINUTES_PER_SESSION = 7.5; // avg setup/wait time added per gym session
+  const HERO_DISCOUNT_AMOUNT = 500; // fixed hero discount, Tonal 2 only
   const AVG_SALES_TAX_PCT = 5.09; // simple average of state-only rates, all 50 states + DC, Tax Foundation Jan 2026 data
   const INFO_PAGE_IDS = ['accessoriesPage', 'warrantyPage', 'installationPage', 'membershipPage'];
 
@@ -246,6 +250,7 @@
     discountDollar: 0,
     discountOpen: false,
     discountTarget: 'trainer',   // 'trainer' | 'bundle' — which line item the discount applies to
+    heroDiscountApplied: false, // $500 off Tonal 2, independent of the manual discount above
     household: 1,
     compareTab: 'membership',   // 'membership' | 'homeGym' | 'timeSavings'
     tsSessionsPerWeek: 4,
@@ -307,11 +312,14 @@
     const discountAmount = !isTonal2 ? 0 : (discountMode === 'dollar'
       ? Math.min(discountDollar, discountTargetPrice)
       : discountTargetPrice * (discountPct / 100));
-    const trainerAfterDiscount = trainerPrice - (discountTarget === 'trainer' ? discountAmount : 0);
+    // hero discount: fixed $500 off, Tonal 2 only, independent of the manual discount above
+    const heroDiscountAmount = (isTonal2 && s.heroDiscountApplied) ? HERO_DISCOUNT_AMOUNT : 0;
+    const heroDiscountDescription = heroDiscountAmount > 0 ? ('Hero discount ($500 off Tonal 2): -' + fmt(heroDiscountAmount)) : '';
+    const trainerAfterDiscount = trainerPrice - (discountTarget === 'trainer' ? discountAmount : 0) - heroDiscountAmount;
     const bundleAfterDiscount = bundlePrice - (discountTarget === 'bundle' ? discountAmount : 0);
     const subtotal = trainerAfterDiscount + bundleAfterDiscount + shippingCost + warrantyPrice;
     const subtotalNoShipping = trainerAfterDiscount + bundleAfterDiscount + warrantyPrice;
-    // excludes shipping AND the manual discount; used only for the sheet log, never shown on-screen
+    // excludes shipping AND both discounts; used only for the sheet log, never shown on-screen
     const subtotalNoShipDiscount = trainerPrice + bundlePrice + warrantyPrice;
     const discountTargetLabel = discountTarget === 'bundle' ? 'Accessories discount' : 'Trainer discount';
     const discLabel = discountMode === 'dollar' ? discountTargetLabel : discountTargetLabel + ' (' + discountPct + '%)';
@@ -324,6 +332,9 @@
     const summary = [
       { label: trainerName + ' trainer', value: fmt(trainerPrice) },
     ];
+    if (heroDiscountAmount > 0) {
+      summary.push({ label: 'Hero discount ($500 off Tonal 2)', value: '-' + fmt(heroDiscountAmount) });
+    }
     if (discountAmount > 0 && discountTarget === 'trainer') {
       summary.push({ label: discLabel, value: '-' + fmt(discountAmount) });
     }
@@ -434,6 +445,9 @@
       subtotalLabel: fmt(subtotal),
       subtotalNoShipDiscount,
       discountDescription,
+      heroDiscountAmount,
+      heroDiscountDescription,
+      heroDiscountApplied: s.heroDiscountApplied,
       isRent,
       sendSummary,
       recapValue,
@@ -646,6 +660,9 @@
     el('switchLabel').textContent = vals.switchLabel;
     el('allInHero').textContent = vals.allInLabel;
     el('financing36MoLabel').textContent = vals.financing36MoLabel;
+    el('heroDiscountRow').style.display = vals.isTonal2 ? 'flex' : 'none';
+    el('heroDiscountTrack').style.background = vals.heroDiscountApplied ? '#26bf86' : 'rgba(255,255,255,.14)';
+    el('heroDiscountThumb').style.left = vals.heroDiscountApplied ? '21px' : '3px';
     renderBundleList(vals);
     renderShippingList();
     renderWarrantyList('warrantyListAlways');
@@ -810,6 +827,7 @@
       case 'setDiscountModePct': setState({ discountMode: 'pct' }); break;
       case 'setDiscountModeDollar': setState({ discountMode: 'dollar' }); break;
       case 'toggleDiscountOpen': setState({ discountOpen: !state.discountOpen }); break;
+      case 'toggleHeroDiscount': setState({ heroDiscountApplied: !state.heroDiscountApplied }); break;
       case 'setDiscountFree': setState({ discountMode: 'pct', discountPct: 100 }); break;
       case 'selectHousehold': setState({ household: parseInt(value, 10) }); break;
       case 'setMembershipTab': setState({ compareTab: 'membership' }); break;
