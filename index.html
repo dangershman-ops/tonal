@@ -76,6 +76,18 @@
             </div>
             <span id="financingTeaser" style="display:block;margin-top:6px;font-size:12.5px;color:#86948a">As low as <span id="financing36MoLabel" style="color:#71fbbd;font-weight:700">$0</span>/mo for 36 months*</span>
 
+            <!-- hero discount: $500 off, Tonal 2 only -->
+            <div id="heroDiscountRow" style="margin-top:14px;padding:12px 14px;border-radius:14px;background:linear-gradient(150deg,rgba(81,222,162,.1),rgba(23,28,31,.5));border:1px solid rgba(81,222,162,.28);display:flex;align-items:center;justify-content:space-between;gap:10px">
+              <span>
+                <span style="display:block;font-size:12px;font-weight:700;color:#f1f5f3">$500 off Tonal 2</span>
+                <span style="display:block;font-size:10px;color:#86948a;margin-top:2px">Limited-time hero discount</span>
+              </span>
+              <button data-action="toggleHeroDiscount" id="heroDiscountToggleBtn" style="all:unset;cursor:pointer;position:relative;width:44px;height:26px;flex:none">
+                <span id="heroDiscountTrack" style="position:absolute;inset:0;border-radius:999px;background:rgba(255,255,255,.14);transition:background .15s"></span>
+                <span id="heroDiscountThumb" style="position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:999px;background:#f3fbff;box-shadow:0 2px 4px rgba(0,0,0,.4);transition:left .15s"></span>
+              </button>
+            </div>
+
             <!-- accessory bundle -->
             <div style="margin-top:22px;display:flex;align-items:center;justify-content:space-between">
               <span style="font-size:10px;font-weight:700;letter-spacing:.14em;color:#86948a;text-transform:uppercase">Accessories bundle</span>
