@@ -30,41 +30,14 @@
       purchaseLink: purchaseLink || '',
       timestamp: new Date().toISOString(),
     }, parts || {}));
-    urls.forEach((url) => submitViaHiddenForm(url, body));
-  }
-
-  // Google Apps Script Web Apps redirect internally (script.google.com ->
-  // script.googleusercontent.com) to actually execute doPost. fetch(url, {mode:
-  // 'no-cors'}) can lose the POST body across that redirect, so the script sees
-  // a request with no body at all. A real HTML form submission (via a hidden
-  // iframe, so the page never navigates) follows that redirect correctly at the
-  // browser/network level, so this is used instead of fetch for sheet logging.
-  function submitViaHiddenForm(url, jsonPayload) {
-    const iframeName = 'sheet-log-' + Math.random().toString(36).slice(2);
-    const iframe = document.createElement('iframe');
-    iframe.name = iframeName;
-    iframe.style.display = 'none';
-    document.body.appendChild(iframe);
-
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = url;
-    form.target = iframeName;
-    form.style.display = 'none';
-
-    const input = document.createElement('input');
-    input.type = 'hidden';
-    input.name = 'payload';
-    input.value = jsonPayload;
-    form.appendChild(input);
-
-    document.body.appendChild(form);
-    form.submit();
-
-    setTimeout(() => {
-      form.remove();
-      iframe.remove();
-    }, 5000);
+    urls.forEach((url) => {
+      fetch(url, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body,
+      }).catch((err) => console.warn('Sheet logging failed for ' + url + ':', err));
+    });
   }
 
   const BUNDLES = [
