@@ -15,7 +15,7 @@
   // remove entries as needed. Leave the array empty to skip logging entirely.
   const SHEETS_WEBHOOK_URLS = [
     'https://script.google.com/macros/s/AKfycbzg5uDJ_HtuLQAO2gcgZpmYyuCJfDqBlxd_P4Wvo7L-cUmd1k7bdPwLsI97wFIuPrkspw/exec', // Sheet 1 (original)
-    'https://script.google.com/macros/s/AKfycbxsAJ3Z_WTQ-8ZpJ47Ib7Yqeqw0gObpc32gJTcbfUToSoh91oEDbDIMRPYSXUSyxULt/exec', // Pricing Companion tab
+    'https://script.google.com/macros/s/AKfycbw9ZXb5AoA6lWrbxL3HFKwvaab7v61UICSylPOSUeL7ftjTl6VgS90uZpiufwMymyhD/exec', // Sheet 2 ("test" tab)
   ];
 
   function logQuoteToSheet(contactMethod, contactValue, store, quoteLines, subtotalPreTax, purchaseLink, parts) {
@@ -58,8 +58,8 @@
   ];
 
   const RENT = {
-    tonal2: { regular: 279, freeMonths: 1 },
-    tonal1: { regular: 219, freeMonths: 1 },
+    tonal2: { promo: 219, regular: 279, savingsMo: 60, savingsTotal: 180 },
+    tonal1: { promo: 159, regular: 219, savingsMo: 60, savingsTotal: 180 },
   };
 
   // ---- purchase-link attribution (tonal.com checkout) ----
@@ -155,19 +155,29 @@
         ].map((r) => r.label + ': ' + r.value).join(' + ');
     // each checkout-link component in its own field (blank for the parts a
     // rental link doesn't carry) so the sheet mirrors the URL-generator columns
-    const discBits = [];
-    if (!vals.isRent && vals.heroDiscountDescription) discBits.push(vals.heroDiscountDescription);
-    if (!vals.isRent && vals.discountDescription) discBits.push(vals.discountDescription);
     const parts = {
       agentId: state.repAgent || '',
       mode: vals.isRent ? 'Rent' : 'Buy',
       trainer: vals.isTonal2 ? 'Tonal 2' : 'Tonal 1 - Certified Refurbished',
       accessories: vals.isRent ? '' : ((BUNDLES.find((b) => b.key === state.bundle) || {}).name || ''),
       warranty: vals.isRent ? '' : ((WARRANTY.find((w) => w.key === state.warranty) || {}).name || ''),
-      discountApplied: discBits.join('; '),
-      customerFirstName: (state.contactFirstName || '').trim(),
+      discountApplied: (!vals.isRent && vals.discountDescription) ? vals.discountDescription : '',
     };
     return { quoteLines, parts };
+  }
+
+  function fallbackCopy(text, cb) {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      if (cb) cb();
+    } catch (e) { /* no-op */ }
   }
 
   const H_LABELS = { 1: 'Just me', 2: 'Me & my partner', 3: 'Small family', 4: 'Small family', 5: 'Whole family', 6: 'Whole family' };
@@ -175,10 +185,8 @@
   const GYM_PP = 65;     // $/mo per person, U.S. Health & Fitness Association
   const SESS_RATE = 65;  // $/hr, NESTA certified
   const HOME_GYM_HIGH = 25000; // top of $7K-$25K range, RitFit
-  const TS_WASTE_MINUTES_PER_SESSION = 7.5; // avg setup/wait time added per gym session
-  const HERO_DISCOUNT_AMOUNT = 500; // fixed hero discount, Tonal 2 only
   const AVG_SALES_TAX_PCT = 5.09; // simple average of state-only rates, all 50 states + DC, Tax Foundation Jan 2026 data
-  const INFO_PAGE_IDS = ['accessoriesPage', 'warrantyPage', 'installationPage', 'membershipPage', 'financingPage'];
+  const INFO_PAGE_IDS = ['accessoriesPage', 'warrantyPage', 'installationPage', 'membershipPage'];
 
   // State-only sales tax rate by state, Tax Foundation Jan 2026 data
   const STATE_TAX = [
@@ -250,20 +258,15 @@
     discountDollar: 0,
     discountOpen: false,
     discountTarget: 'trainer',   // 'trainer' | 'bundle' — which line item the discount applies to
-    heroDiscountApplied: false, // $500 off Tonal 2, independent of the manual discount above
-    heroDiscountCategory: 'Military', // 'Military' | 'First Responder' | 'Healthcare Worker' | 'Teacher'
     household: 1,
-    compareTab: 'membership',   // 'membership' | 'homeGym' | 'timeSavings'
-    tsSessionsPerWeek: 4,
-    tsDriveMinutes: 20,
-    tsWasteEnabled: true,
+    compareTab: 'membership',
     contactMethod: 'email',
     contactValue: '',
-    contactFirstName: '',
     store: '',
     repAgent: '',
     sent: false,
     skippedContact: false,   // true when sent via the "skip" button (no email/text collected)
+    linkRevealOpen: false,   // on-screen purchase-link reveal, toggled by "Show purchase link"
   };
 
   // restore persisted rep identity (agent id + store location code)
@@ -313,15 +316,11 @@
     const discountAmount = !isTonal2 ? 0 : (discountMode === 'dollar'
       ? Math.min(discountDollar, discountTargetPrice)
       : discountTargetPrice * (discountPct / 100));
-    // heroes discount: fixed $500 off, Tonal 2 only, independent of the manual discount above
-    const heroDiscountAmount = (isTonal2 && s.heroDiscountApplied) ? HERO_DISCOUNT_AMOUNT : 0;
-    const heroDiscountLabel = 'Heroes Discount (' + s.heroDiscountCategory + ')';
-    const heroDiscountDescription = heroDiscountAmount > 0 ? (heroDiscountLabel + ': -' + fmt(heroDiscountAmount)) : '';
-    const trainerAfterDiscount = trainerPrice - (discountTarget === 'trainer' ? discountAmount : 0) - heroDiscountAmount;
+    const trainerAfterDiscount = trainerPrice - (discountTarget === 'trainer' ? discountAmount : 0);
     const bundleAfterDiscount = bundlePrice - (discountTarget === 'bundle' ? discountAmount : 0);
     const subtotal = trainerAfterDiscount + bundleAfterDiscount + shippingCost + warrantyPrice;
     const subtotalNoShipping = trainerAfterDiscount + bundleAfterDiscount + warrantyPrice;
-    // excludes shipping AND both discounts; used only for the sheet log, never shown on-screen
+    // excludes shipping AND the manual discount; used only for the sheet log, never shown on-screen
     const subtotalNoShipDiscount = trainerPrice + bundlePrice + warrantyPrice;
     const discountTargetLabel = discountTarget === 'bundle' ? 'Accessories discount' : 'Trainer discount';
     const discLabel = discountMode === 'dollar' ? discountTargetLabel : discountTargetLabel + ' (' + discountPct + '%)';
@@ -334,9 +333,6 @@
     const summary = [
       { label: trainerName + ' trainer', value: fmt(trainerPrice) },
     ];
-    if (heroDiscountAmount > 0) {
-      summary.push({ label: heroDiscountLabel, value: '-' + fmt(heroDiscountAmount) });
-    }
     if (discountAmount > 0 && discountTarget === 'trainer') {
       summary.push({ label: discLabel, value: '-' + fmt(discountAmount) });
     }
@@ -379,17 +375,6 @@
     // ---- compare: home gym sticker ----
     const tonalBarPct = Math.max(6, Math.round((allIn / HOME_GYM_HIGH) * 100));
     const isMembershipTab = s.compareTab === 'membership';
-    const isTimeSavingsTab = s.compareTab === 'timeSavings';
-
-    // ---- compare: time saved training at home vs driving to the gym ----
-    const tsAnnualSessions = s.tsSessionsPerWeek * 52;
-    const tsDriveMinutesPerYear = tsAnnualSessions * s.tsDriveMinutes;
-    const tsWaitMinutesPerYear = s.tsWasteEnabled ? tsAnnualSessions * TS_WASTE_MINUTES_PER_SESSION : 0;
-    const tsTotalMinutesPerYear = tsDriveMinutesPerYear + tsWaitMinutesPerYear;
-    const tsTotalHours = tsTotalMinutesPerYear / 60;
-    const tsTotalDays = tsTotalHours / 24;
-    const tsWeekHours = tsTotalHours / 52;
-    const tsMonthHours = tsTotalHours / 12;
 
     // ---- contact method (email or text) ----
     const contactMethod = s.contactMethod;
@@ -406,12 +391,12 @@
     const rentInfo = RENT[s.trainer];
 
     // ---- compare: rent vs personal training (2x/week) ----
-    const rentMo = rentInfo.regular;
+    const rentMo = rentInfo.promo;
     const rentTrainerMo = SESS_RATE * 8 * N;
     const rentVsTrainerMax = Math.max(rentMo, rentTrainerMo);
     const rentBarPct = (v) => Math.max(7, Math.round((v / rentVsTrainerMax) * 100));
     const rentCompareColumns = [
-      { label: 'Rent ' + trainerName, sub: 'First month free · membership included', note: '', valueLabel: fmt(rentMo) + '/mo', valColor: '#51dea2', barPct: rentBarPct(rentMo), barBg: 'linear-gradient(180deg,#71fbbd,#26bf86)', barGlow: '0 0 28px rgba(81,222,162,.4)' },
+      { label: 'Rent ' + trainerName, sub: 'First 3 months · membership included', note: '', valueLabel: fmt(rentMo) + '/mo', valColor: '#51dea2', barPct: rentBarPct(rentMo), barBg: 'linear-gradient(180deg,#71fbbd,#26bf86)', barGlow: '0 0 28px rgba(81,222,162,.4)' },
       { label: 'Personal Trainer', sub: '$65/hr · 2x/week', note: 'according to NESTA certified', valueLabel: fmt(rentTrainerMo) + '/mo', valColor: '#e88a8e', barPct: rentBarPct(rentTrainerMo), barBg: 'linear-gradient(180deg,#c54e53,#7e2f33)', barGlow: 'none' },
     ];
     const rentTrainerDiff = rentTrainerMo - rentMo;
@@ -419,19 +404,20 @@
     const rentSavesLabel = '$' + Math.round(Math.abs(rentTrainerDiff));
     const rentSavesCopy = rentSavesPositive
       ? 'less/mo than a personal trainer, and you keep unlimited access at home, every day.'
-      : 'more/mo than a personal trainer, but you get unlimited training, every day, at home.';
+      : 'more/mo than a personal trainer for the first 3 months, but you get unlimited training, every day, at home.';
 
     // ---- quote that follows the chosen buy/rent mode ----
     const isRent = s.purchaseMode === 'rent';
     const rentSummary = [
-      { label: trainerName + ' rental', value: fmt(rentInfo.regular) + '/mo' },
-      { label: 'First month', value: 'Free' },
+      { label: trainerName + ' rental · first 3 months', value: fmt(rentInfo.promo) + '/mo' },
+      { label: 'Regular rate (month 4+)', value: fmt(rentInfo.regular) + '/mo' },
       { label: 'Membership', value: 'Included' },
+      { label: 'You save', value: fmt(rentInfo.savingsMo) + '/mo for 3 mo' },
     ];
     const sendSummary = isRent ? rentSummary : summary;
-    const recapValue = isRent ? fmt(rentInfo.regular) + '/mo' : fmt(allIn);
+    const recapValue = isRent ? fmt(rentInfo.promo) + '/mo' : fmt(allIn);
     const logValue = isRent
-      ? fmt(rentInfo.regular) + '/mo (first month free)'
+      ? fmt(rentInfo.promo) + '/mo (first 3 months, then ' + fmt(rentInfo.regular) + '/mo)'
       : fmt(subtotalNoShipDiscount);
 
     return {
@@ -439,17 +425,11 @@
       trainerName,
       isTonal2,
       isTonal1: !isTonal2,
-      allIn,
       allInLabel: fmt(allIn),
-      financing36MoLabel: fmt(allIn / 36),
       subtotal,
       subtotalLabel: fmt(subtotal),
       subtotalNoShipDiscount,
       discountDescription,
-      heroDiscountAmount,
-      heroDiscountDescription,
-      heroDiscountApplied: s.heroDiscountApplied,
-      heroDiscountCategory: s.heroDiscountCategory,
       isRent,
       sendSummary,
       recapValue,
@@ -485,18 +465,7 @@
       householdLabel: H_LABELS[N],
       columns,
       isMembershipTab,
-      isHomeGymTab: s.compareTab === 'homeGym',
-      isTimeSavingsTab,
-      tsSessionsPerWeek: s.tsSessionsPerWeek,
-      tsDriveMinutes: s.tsDriveMinutes,
-      tsWasteEnabled: s.tsWasteEnabled,
-      tsAnnualSessions,
-      tsHeroHours: Math.round(tsTotalHours),
-      tsHeroDays: tsTotalDays.toFixed(1),
-      tsWeekHoursLabel: tsWeekHours.toFixed(1),
-      tsMonthHoursLabel: tsMonthHours.toFixed(1),
-      tsDriveHoursLabel: (tsDriveMinutesPerYear / 60).toFixed(1),
-      tsWaitHoursLabel: (tsWaitMinutesPerYear / 60).toFixed(1),
+      isHomeGymTab: !isMembershipTab,
       membershipLabel: '$' + membership.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
       memSavesLabel: '$' + Math.round(Math.abs(memDiff)),
       memSavesPositive,
@@ -611,28 +580,6 @@
       </div>`).join('');
   }
 
-  function renderFinancingPlans(amount) {
-    const container = el('financingPlans');
-    if (!amount || amount <= 0) { container.innerHTML = ''; return; }
-    const fmt2 = (n) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    container.innerHTML = [12, 24, 36].map((mo) => {
-      const monthly = amount / mo;
-      return `
-      <div style="background:linear-gradient(145deg,rgba(23,29,33,.95),rgba(15,20,23,.97));border:1px solid rgba(134,148,138,.16);border-radius:16px;padding:16px 18px">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-          <span style="font-family:'Big Shoulders Display',sans-serif;font-weight:900;font-size:24px;color:#f1f5f3">$${fmt2(monthly)}<span style="font-family:'Inter',sans-serif;font-weight:500;font-size:12px;color:#86948a;margin-left:4px">/mo</span></span>
-          <span style="background:#51dea2;color:#041a0f;font-size:10.5px;font-weight:800;letter-spacing:.05em;border-radius:999px;padding:4px 11px">${mo} months</span>
-        </div>
-        <div style="height:1px;background:rgba(134,148,138,.1);margin:8px 0"></div>
-        <div style="display:flex;flex-direction:column;gap:5px">
-          <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:#86948a">APR</span><span style="color:#51dea2;font-weight:600">0.00%</span></div>
-          <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:#86948a">Interest</span><span style="color:#51dea2;font-weight:600">$0.00</span></div>
-          <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:#86948a">Total of payments</span><span style="color:#c8d4cc;font-weight:600">$${fmt2(amount)}</span></div>
-        </div>
-      </div>`;
-    }).join('');
-  }
-
   function syncDiscountModeUI(vals) {
     const isDollar = vals.discountMode === 'dollar';
     el('discModePctBtn').style.background = isDollar ? 'transparent' : '#51dea2';
@@ -666,27 +613,21 @@
 
     // ---- price screen: buy / rent toggle ----
     const isBuy = vals.purchaseMode === 'buy';
-    el('buyModeBtn').style.background = isBuy ? '#51dea2' : 'transparent';
-    el('buyModeBtn').style.color = isBuy ? '#051512' : '#86948a';
-    el('rentModeBtn').style.background = isBuy ? 'transparent' : '#51dea2';
-    el('rentModeBtn').style.color = isBuy ? '#86948a' : '#051512';
+    // Hide the "Rent instead" card when already in rent mode
+    el('rentModeBtn').style.display = isBuy ? 'flex' : 'none';
     el('buyFlow').style.display = isBuy ? 'block' : 'none';
     el('rentFlow').style.display = isBuy ? 'none' : 'flex';
 
     // ---- price screen: rent flow ----
     el('rentTrainerName').textContent = vals.trainerName;
+    el('rentPromoPrice').textContent = fmt(vals.rentInfo.promo);
     el('rentRegularPrice').textContent = fmt(vals.rentInfo.regular);
-    el('rentFreeMonthValue').textContent = fmt(vals.rentInfo.regular);
+    el('rentSavingsMo').textContent = fmt(vals.rentInfo.savingsMo);
+    el('rentSavingsTotal').textContent = fmt(vals.rentInfo.savingsTotal);
 
     // ---- price screen: buy flow ----
     el('switchLabel').textContent = vals.switchLabel;
     el('allInHero').textContent = vals.allInLabel;
-    el('financing36MoLabel').textContent = vals.financing36MoLabel;
-    el('heroDiscountRow').style.display = vals.isTonal2 ? 'block' : 'none';
-    el('heroDiscountTrack').style.background = vals.heroDiscountApplied ? '#26bf86' : 'rgba(255,255,255,.14)';
-    el('heroDiscountThumb').style.left = vals.heroDiscountApplied ? '21px' : '3px';
-    el('heroDiscountCategorySelect').style.display = vals.heroDiscountApplied ? 'block' : 'none';
-    el('heroDiscountCategorySelect').value = vals.heroDiscountCategory;
     renderBundleList(vals);
     renderShippingList();
     renderWarrantyList('warrantyListAlways');
@@ -712,6 +653,8 @@
     renderSummaryRows('summaryListPrice', vals.summary);
     el('allInTotalPrice').textContent = vals.allInLabel;
     el('tonal1Compare').style.display = vals.isTonal1 ? 'block' : 'none';
+    const financingLink = document.getElementById('financingLink');
+    if (financingLink) financingLink.href = 'financing.html?amount=' + Math.round(vals.subtotal);
 
     // ---- compare screen: buy vs rent view ----
     el('compareBuyView').style.display = vals.purchaseMode === 'rent' ? 'none' : 'flex';
@@ -722,27 +665,8 @@
     el('memTabBtn').style.color = vals.isMembershipTab ? '#051512' : '#86948a';
     el('hgTabBtn').style.background = vals.isHomeGymTab ? '#51dea2' : 'transparent';
     el('hgTabBtn').style.color = vals.isHomeGymTab ? '#051512' : '#86948a';
-    el('tsTabBtn').style.background = vals.isTimeSavingsTab ? '#51dea2' : 'transparent';
-    el('tsTabBtn').style.color = vals.isTimeSavingsTab ? '#051512' : '#86948a';
     el('membershipTab').style.display = vals.isMembershipTab ? 'flex' : 'none';
     el('homeGymTab').style.display = vals.isHomeGymTab ? 'flex' : 'none';
-    el('timeSavingsTab').style.display = vals.isTimeSavingsTab ? 'flex' : 'none';
-
-    // ---- compare screen: time saved tab ----
-    if (document.activeElement !== el('tsSessionsRange')) el('tsSessionsRange').value = vals.tsSessionsPerWeek;
-    el('tsSessionsLabel').textContent = vals.tsSessionsPerWeek;
-    if (document.activeElement !== el('tsDriveRange')) el('tsDriveRange').value = vals.tsDriveMinutes;
-    el('tsDriveLabel').textContent = vals.tsDriveMinutes + ' min';
-    el('tsWasteTrack').style.background = vals.tsWasteEnabled ? '#26bf86' : 'rgba(255,255,255,.14)';
-    el('tsWasteThumb').style.left = vals.tsWasteEnabled ? '19px' : '3px';
-    el('tsWaitRow').style.display = vals.tsWasteEnabled ? 'flex' : 'none';
-    el('tsWeekHours').textContent = vals.tsWeekHoursLabel;
-    el('tsMonthHours').textContent = vals.tsMonthHoursLabel;
-    el('tsHeroHours').textContent = vals.tsHeroHours;
-    el('tsHeroDays').textContent = vals.tsHeroDays;
-    el('tsDriveHoursLabel').textContent = vals.tsDriveHoursLabel + ' hrs';
-    el('tsWaitHoursLabel').textContent = vals.tsWaitHoursLabel + ' hrs';
-    el('tsAnnualSessions').textContent = vals.tsAnnualSessions;
 
     // ---- compare screen: membership tab ----
     el('membershipLabel').textContent = vals.membershipLabel;
@@ -760,7 +684,7 @@
 
     // ---- compare screen: rent view ----
     el('rentCompareTrainerName').textContent = vals.trainerName;
-    el('rentCompareMoLabel').textContent = fmt(vals.rentInfo.regular);
+    el('rentCompareMoLabel').textContent = fmt(vals.rentInfo.promo);
     renderColumns('rentCompareColumns', vals.rentCompareColumns);
     const rentCallout = el('rentSavesCallout');
     rentCallout.style.background = vals.rentSavesCalloutBg;
@@ -790,6 +714,14 @@
     const repAgentInput = el('repAgentInput');
     if (repAgentInput && document.activeElement !== repAgentInput) repAgentInput.value = state.repAgent;
     updateContactDependent(vals);
+
+    // on-screen purchase-link reveal (Checkout link card)
+    el('showLinkBtn').textContent = state.linkRevealOpen ? 'Hide purchase link' : 'Show purchase link';
+    el('purchaseLinkReveal').style.display = state.linkRevealOpen ? 'block' : 'none';
+    if (state.linkRevealOpen) {
+      const link = buildPurchaseLink(vals);
+      el('purchaseLinkText').textContent = link || 'Enter your Agent ID and select a store above to generate the link.';
+    }
 
     el('notSentPanel').style.display = state.sent ? 'none' : 'flex';
     el('sentPanel').style.display = state.sent ? 'flex' : 'none';
@@ -821,7 +753,6 @@
     if (document.activeElement !== el('discountValueInput')) el('discountValueInput').value = discountDisplayValue;
     if (document.activeElement !== el('discountRange')) el('discountRange').value = discountDisplayValue;
     el('allInHero').textContent = vals.allInLabel;
-    el('financing36MoLabel').textContent = vals.financing36MoLabel;
     el('allInTotalPrice').textContent = vals.allInLabel;
     renderSummaryRows('summaryListPrice', vals.summary);
     renderSendSummaryRows('summaryListSend', vals.sendSummary);
@@ -849,23 +780,15 @@
       case 'setDiscountModePct': setState({ discountMode: 'pct' }); break;
       case 'setDiscountModeDollar': setState({ discountMode: 'dollar' }); break;
       case 'toggleDiscountOpen': setState({ discountOpen: !state.discountOpen }); break;
-      case 'toggleHeroDiscount': setState({ heroDiscountApplied: !state.heroDiscountApplied }); break;
       case 'setDiscountFree': setState({ discountMode: 'pct', discountPct: 100 }); break;
       case 'selectHousehold': setState({ household: parseInt(value, 10) }); break;
       case 'setMembershipTab': setState({ compareTab: 'membership' }); break;
       case 'setHomeGymTab': setState({ compareTab: 'homeGym' }); break;
-      case 'setTimeSavingsTab': setState({ compareTab: 'timeSavings' }); break;
-      case 'toggleTsWaste': setState({ tsWasteEnabled: !state.tsWasteEnabled }); break;
       case 'setContactMethodEmail': setState({ contactMethod: 'email' }); break;
       case 'setContactMethodText': setState({ contactMethod: 'text' }); break;
       case 'openInfoPage':
         INFO_PAGE_IDS.forEach((id) => { el(id).style.display = 'none'; });
         el(value + 'Page').style.display = 'block';
-        if (value === 'financing') {
-          const amt = Math.round(computeVals().allIn);
-          el('financingAmountInput').value = amt;
-          renderFinancingPlans(amt);
-        }
         break;
       case 'closeInfoPage':
         INFO_PAGE_IDS.forEach((id) => { el(id).style.display = 'none'; });
@@ -888,11 +811,28 @@
         }
         break;
       }
+      case 'togglePurchaseLinkVisible': setState({ linkRevealOpen: !state.linkRevealOpen }); break;
+      case 'copyPurchaseLink': {
+        const url = buildPurchaseLink(computeVals());
+        if (!url) break;
+        const done = () => {
+          const b = el('copyLinkBtn');
+          if (!b) return;
+          const orig = b.textContent;
+          b.textContent = 'Copied ✓';
+          setTimeout(() => { b.textContent = orig; }, 1800);
+        };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(url).then(done).catch(() => fallbackCopy(url, done));
+        } else {
+          fallbackCopy(url, done);
+        }
+        break;
+      }
       case 'restart':
         // keep rep context (agent id + store); clear only the customer's details
-        setState({ step: 0, sent: false, skippedContact: false, contactValue: '', contactFirstName: '' });
+        setState({ step: 0, sent: false, skippedContact: false, contactValue: '' });
         el('emailInput').value = '';
-        el('firstNameInput').value = '';
         break;
     }
   });
@@ -940,10 +880,6 @@
     updateContactDependent(computeVals());
   });
 
-  el('firstNameInput').addEventListener('input', (e) => {
-    state.contactFirstName = e.target.value;
-  });
-
   el('storeSelect').addEventListener('change', (e) => {
     state.store = e.target.value;
     const rep = loadRep();
@@ -958,27 +894,15 @@
     const rep = loadRep();
     rep.agent = state.repAgent;
     saveRep(rep);
-    updateContactDependent(computeVals());
+    const vals = computeVals();
+    updateContactDependent(vals);
+    if (state.linkRevealOpen) {
+      el('purchaseLinkText').textContent = buildPurchaseLink(vals) || 'Enter your Agent ID and select a store above to generate the link.';
+    }
   });
 
   el('discountTargetSelect').addEventListener('change', (e) => {
     setState({ discountTarget: e.target.value });
-  });
-
-  el('heroDiscountCategorySelect').addEventListener('change', (e) => {
-    setState({ heroDiscountCategory: e.target.value });
-  });
-
-  el('financingAmountInput').addEventListener('input', (e) => {
-    renderFinancingPlans(parseFloat(e.target.value) || 0);
-  });
-
-  el('tsSessionsRange').addEventListener('input', (e) => {
-    setState({ tsSessionsPerWeek: parseInt(e.target.value, 10) });
-  });
-
-  el('tsDriveRange').addEventListener('input', (e) => {
-    setState({ tsDriveMinutes: parseInt(e.target.value, 10) });
   });
 
   // populate the membership member-vs-non-member comparison once
