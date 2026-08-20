@@ -796,7 +796,7 @@
       if (!btn) return;
       btn.disabled = !enabled;
       btn.style.cursor = enabled ? 'pointer' : 'default';
-      btn.style.color = enabled ? '#51dea2' : (id === 'sendBtn' ? '#3a5244' : '#5d6a62');
+      btn.style.color = enabled ? '#51dea2' : '#5d6a62';
       btn.style.borderColor = enabled ? 'rgba(81,222,162,.45)' : 'rgba(134,148,138,.25)';
     }
 
@@ -839,11 +839,9 @@
       case 'buyNow': {
         const vals = computeVals();
         const link = buildPurchaseLink(vals);
-        if (link) {
-          const { quoteLines, parts } = buildQuoteLinesAndParts(vals);
-          logQuoteToSheet(vals.contactMethod, vals.contactValue.trim(), vals.storeNameLabel, quoteLines, vals.logValue, link, parts, 'Buy Now');
-          window.open(link, '_blank');
-        }
+        const { quoteLines, parts } = buildQuoteLinesAndParts(vals);
+        logQuoteToSheet(vals.contactMethod, vals.contactValue.trim(), vals.storeNameLabel, quoteLines, vals.logValue, link || '', parts, 'Buy Now');
+        if (link) window.open(link, '_blank');
         break;
       }
       case 'switchTrainer': setState({ trainer: state.trainer === 'tonal2' ? 'tonal1' : 'tonal2' }); break;
