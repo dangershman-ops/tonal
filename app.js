@@ -798,7 +798,6 @@
       btn.style.cursor = enabled ? 'pointer' : 'default';
       btn.style.color = enabled ? '#51dea2' : (id === 'sendBtn' ? '#3a5244' : '#5d6a62');
       btn.style.borderColor = enabled ? 'rgba(81,222,162,.45)' : 'rgba(134,148,138,.25)';
-      btn.style.background = enabled ? 'rgba(81,222,162,.1)' : (id === 'sendBtn' ? 'rgba(43,58,51,.6)' : 'transparent');
     }
 
     styleActionBtn('genLinkBtn', canLink);
