@@ -430,7 +430,8 @@
             <!-- nav -->
             <div style="display:flex;gap:12px;margin-top:16px;flex:none">
               <button data-action="goPrice" style="flex:none;width:52px;height:56px;border-radius:999px;border:1px solid rgba(134,148,138,.24);background:transparent;color:#bbcabf;font-size:20px">←</button>
-              <button data-action="goSend" style="flex:1;height:56px;border-radius:999px;border:none;background:#51dea2;color:#051512;font-weight:700;font-size:14px;letter-spacing:.03em;display:flex;align-items:center;justify-content:center;gap:9px">Email me this quote <span style="font-size:16px">→</span></button>
+              <button id="buyNowBtn" data-action="buyNow" style="flex:none;height:56px;padding:0 22px;border-radius:999px;border:1px solid rgba(81,222,162,.4);background:transparent;color:#51dea2;font-weight:700;font-size:14px;letter-spacing:.03em;opacity:.4;cursor:default">Buy Now</button>
+              <button data-action="goSend" style="flex:1;height:56px;border-radius:999px;border:none;background:#51dea2;color:#051512;font-weight:700;font-size:14px;letter-spacing:.03em;display:flex;align-items:center;justify-content:center;gap:9px">Email Quote <span style="font-size:16px">→</span></button>
             </div>
 
           </section>
@@ -441,14 +442,9 @@
             <!-- NOT SENT -->
             <div id="notSentPanel" style="display:flex;flex-direction:column;height:100%">
               <span style="font-size:10px;font-weight:600;letter-spacing:.18em;color:#51dea2;text-transform:uppercase">Take it home</span>
-              <h2 style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:30px;line-height:1.03;color:#f1f5f3;margin:9px 0 0">Want your quote<br><span id="contactMethodHeadline">emailed</span>?</h2>
-              <p style="font-size:12.5px;color:#86948a;line-height:1.5;margin:9px 0 0">Your full quote: model, what's included, and pricing, <span id="contactMethodCopy">straight to your inbox</span>.</p>
+              <h2 style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:30px;line-height:1.03;color:#f1f5f3;margin:9px 0 0">Want your quote<br>emailed?</h2>
+              <p style="font-size:12.5px;color:#86948a;line-height:1.5;margin:9px 0 0">Your full quote: model, what's included, and pricing, straight to your inbox.</p>
 
-              <!-- contact method toggle -->
-              <div style="display:flex;border-radius:14px;border:1px solid rgba(134,148,138,.2);overflow:hidden;background:rgba(0,0,0,.2);margin-top:14px;flex:none">
-                <button data-action="setContactMethodEmail" id="contactMethodEmailBtn" style="flex:1;height:40px;border:none;font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase">Email</button>
-                <button data-action="setContactMethodText" id="contactMethodTextBtn" style="flex:1;height:40px;border:none;font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase">Text</button>
-              </div>
 
               <!-- tonal image -->
               <img src="tonal-space.png" alt="Tonal wall-mounted footprint" style="margin-top:16px;width:100%;border-radius:14px;border:1px solid rgba(134,148,138,.2);display:block">
@@ -511,7 +507,7 @@
 
               <!-- contact input -->
               <div id="emailWrap" style="margin-top:18px;display:flex;align-items:center;gap:10px;padding:6px 6px 6px 18px;border-radius:999px;background:rgba(255,255,255,.03);border:1px solid rgba(134,148,138,.2)">
-                <input id="emailInput" placeholder="name@email.com" inputmode="email" style="flex:1;min-width:0;background:transparent;border:none;color:#f1f5f3;font-size:15px">
+                <input id="emailInput" placeholder="Customer email" inputmode="email" style="flex:1;min-width:0;background:transparent;border:none;color:#f1f5f3;font-size:15px">
                 <button id="sendBtn" data-action="sendQuote" disabled style="flex:none;height:48px;padding:0 24px;border-radius:999px;border:none;background:#2b3a33;color:#051512;font-weight:700;font-size:14px;letter-spacing:.03em;opacity:.5">Send</button>
               </div>
               <button id="skipBtn" data-action="skipContact" disabled style="margin-top:10px;align-self:flex-start;padding:0;background:transparent;border:none;color:#5d6a62;font-size:11.5px;font-weight:600;letter-spacing:.02em;cursor:pointer;text-decoration:underline;text-decoration-color:rgba(134,148,138,.35)">Skip — just log the purchase link</button>

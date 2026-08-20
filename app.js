@@ -743,22 +743,19 @@
     el('recapAllIn').textContent = vals.recapValue;
     renderSendSummaryRows('summaryListSend', vals.sendSummary);
 
-    const isEmail = vals.contactMethod === 'email';
-    el('contactMethodEmailBtn').style.background = isEmail ? '#51dea2' : 'transparent';
-    el('contactMethodEmailBtn').style.color = isEmail ? '#051512' : '#86948a';
-    el('contactMethodTextBtn').style.background = isEmail ? 'transparent' : '#51dea2';
-    el('contactMethodTextBtn').style.color = isEmail ? '#86948a' : '#051512';
-    el('contactMethodHeadline').textContent = isEmail ? 'emailed' : 'texted';
-    el('contactMethodCopy').textContent = isEmail ? 'straight to your inbox' : 'straight to your phone';
     const input = el('emailInput');
-    input.placeholder = isEmail ? 'name@email.com' : '(555) 555-5555';
-    input.inputMode = isEmail ? 'email' : 'tel';
     if (document.activeElement !== input) input.value = vals.contactValue;
     const storeSelect = el('storeSelect');
     if (document.activeElement !== storeSelect) storeSelect.value = vals.store;
     const repAgentInput = el('repAgentInput');
     if (repAgentInput && document.activeElement !== repAgentInput) repAgentInput.value = state.repAgent;
     updateContactDependent(vals);
+
+    // Buy Now button — enabled only when purchase link is ready
+    const buyNowLink = buildPurchaseLink(vals);
+    const buyNowBtn = el('buyNowBtn');
+    buyNowBtn.style.opacity = buyNowLink ? '1' : '0.4';
+    buyNowBtn.style.cursor = buyNowLink ? 'pointer' : 'default';
 
     // on-screen purchase-link reveal (Checkout link card)
     el('showLinkBtn').textContent = state.linkRevealOpen ? 'Hide purchase link' : 'Show purchase link';
@@ -815,6 +812,11 @@
       case 'goPrice': setState({ step: 0 }); break;
       case 'goCompare': setState({ step: 1 }); break;
       case 'goSend': setState({ step: 2 }); break;
+      case 'buyNow': {
+        const link = buildPurchaseLink(computeVals());
+        if (link) window.open(link, '_blank');
+        break;
+      }
       case 'switchTrainer': setState({ trainer: state.trainer === 'tonal2' ? 'tonal1' : 'tonal2' }); break;
       case 'setPurchaseModeBuy': setState({ purchaseMode: 'buy' }); break;
       case 'setPurchaseModeRent': setState({ purchaseMode: 'rent' }); break;
@@ -831,8 +833,6 @@
       case 'setHomeGymTab': setState({ compareTab: 'homeGym' }); break;
       case 'setTimeSavingsTab': setState({ compareTab: 'timeSavings' }); break;
       case 'toggleTsWaste': setState({ tsWasteEnabled: !state.tsWasteEnabled }); break;
-      case 'setContactMethodEmail': setState({ contactMethod: 'email' }); break;
-      case 'setContactMethodText': setState({ contactMethod: 'text' }); break;
       case 'openInfoPage':
         INFO_PAGE_IDS.forEach((id) => { el(id).style.display = 'none'; });
         el(value + 'Page').style.display = 'block';
