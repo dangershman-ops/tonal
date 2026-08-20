@@ -796,15 +796,9 @@
       if (!btn) return;
       btn.disabled = !enabled;
       btn.style.cursor = enabled ? 'pointer' : 'default';
+      btn.style.color = enabled ? '#51dea2' : (id === 'sendBtn' ? '#3a5244' : '#5d6a62');
       btn.style.borderColor = enabled ? 'rgba(81,222,162,.45)' : 'rgba(134,148,138,.25)';
-      btn.style.background = enabled ? 'rgba(81,222,162,.07)' : 'rgba(23,28,31,.6)';
-      // label span (first child after icon)
-      const label = btn.querySelector('span:nth-child(2) span:first-child');
-      if (label) label.style.color = enabled ? '#f1f5f3' : '#86948a';
-      const arrow = btn.querySelector('span:last-child');
-      if (arrow) arrow.style.color = enabled ? '#51dea2' : '#5d6a62';
-      const icon = btn.querySelector('span:first-child');
-      if (icon) icon.style.background = enabled ? 'rgba(81,222,162,.15)' : 'rgba(134,148,138,.12)';
+      btn.style.background = enabled ? 'rgba(81,222,162,.1)' : (id === 'sendBtn' ? 'rgba(43,58,51,.6)' : 'transparent');
     }
 
     styleActionBtn('genLinkBtn', canLink);
