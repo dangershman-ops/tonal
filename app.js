@@ -155,6 +155,7 @@
     // rental link doesn't carry) so the sheet mirrors the URL-generator columns
     const parts = {
       agentId: state.repAgent || '',
+      customerFirstName: (state.customerFirstName || '').trim(),
       mode: vals.isRent ? 'Rent' : 'Buy',
       trainer: vals.isTonal2 ? 'Tonal 2' : 'Tonal 1 - Certified Refurbished',
       accessories: vals.isRent ? '' : ((BUNDLES.find((b) => b.key === state.bundle) || {}).name || ''),
@@ -271,6 +272,7 @@
     contactValue: '',
     store: '',
     repAgent: '',
+    customerFirstName: '',
     sent: false,
     skippedContact: false,   // true when sent via the "skip" button (no email/text collected)
     linkRevealOpen: false,   // on-screen purchase-link reveal, toggled by "Show purchase link"
@@ -769,18 +771,10 @@
     if (repAgentInput && document.activeElement !== repAgentInput) repAgentInput.value = state.repAgent;
     updateContactDependent(vals);
 
-    // Buy Now button — enabled only when purchase link is ready
-    const buyNowLink = buildPurchaseLink(vals);
-    const buyNowBtn = el('buyNowBtn');
-    buyNowBtn.style.opacity = buyNowLink ? '1' : '0.4';
-    buyNowBtn.style.cursor = buyNowLink ? 'pointer' : 'default';
-
-    // on-screen purchase-link reveal (Checkout link card)
-    el('showLinkBtn').textContent = state.linkRevealOpen ? 'Hide purchase link' : 'Show purchase link';
+    // purchase link reveal shown after "Generate Purchase Link" is used
     el('purchaseLinkReveal').style.display = state.linkRevealOpen ? 'block' : 'none';
     if (state.linkRevealOpen) {
-      const link = buildPurchaseLink(vals);
-      el('purchaseLinkText').textContent = link || 'Enter your Agent ID and select a store above to generate the link.';
+      el('purchaseLinkText').textContent = buildPurchaseLink(vals) || '';
     }
 
     el('notSentPanel').style.display = state.sent ? 'none' : 'flex';
@@ -792,16 +786,35 @@
   }
 
   function updateContactDependent(vals) {
-    el('emailWrap').style.border = '1px solid ' + (vals.contactValid ? 'rgba(81,222,162,.4)' : 'rgba(134,148,138,.2)');
-    const canSend = vals.contactValid && vals.storeValid;
-    const btn = el('sendBtn');
-    btn.disabled = !canSend;
-    btn.style.background = canSend ? '#51dea2' : '#2b3a33';
-    btn.style.opacity = canSend ? '1' : '0.5';
-    const canSkip = vals.storeValid && !!(state.repAgent || '').trim();
-    const skipBtn = el('skipBtn');
-    skipBtn.disabled = !canSkip;
-    skipBtn.style.opacity = canSkip ? '1' : '0.4';
+    const agentFilled = !!(state.repAgent || '').trim();
+    const canLink = vals.storeValid && agentFilled;
+    const firstNameFilled = !!(state.customerFirstName || '').trim();
+    const canEmail = canLink && firstNameFilled && vals.contactValid;
+
+    function styleActionBtn(id, enabled) {
+      const btn = el(id);
+      if (!btn) return;
+      btn.disabled = !enabled;
+      btn.style.cursor = enabled ? 'pointer' : 'default';
+      btn.style.borderColor = enabled ? 'rgba(81,222,162,.45)' : 'rgba(134,148,138,.25)';
+      btn.style.background = enabled ? 'rgba(81,222,162,.07)' : 'rgba(23,28,31,.6)';
+      // label span (first child after icon)
+      const label = btn.querySelector('span:nth-child(2) span:first-child');
+      if (label) label.style.color = enabled ? '#f1f5f3' : '#86948a';
+      const arrow = btn.querySelector('span:last-child');
+      if (arrow) arrow.style.color = enabled ? '#51dea2' : '#5d6a62';
+      const icon = btn.querySelector('span:first-child');
+      if (icon) icon.style.background = enabled ? 'rgba(81,222,162,.15)' : 'rgba(134,148,138,.12)';
+    }
+
+    styleActionBtn('genLinkBtn', canLink);
+    styleActionBtn('buyNowBtn', canLink);
+    styleActionBtn('sendBtn', canEmail);
+
+    // email + name input highlight
+    el('emailWrap').style.borderColor = vals.contactValid ? 'rgba(81,222,162,.4)' : 'rgba(134,148,138,.2)';
+    const fnInput = el('firstNameInput');
+    if (fnInput) fnInput.style.borderColor = firstNameFilled ? 'rgba(81,222,162,.4)' : 'rgba(134,148,138,.2)';
   }
 
   function updateTaxDependent() {
@@ -866,7 +879,8 @@
         break;
       case 'sendQuote': {
         const vals = computeVals();
-        if (vals.contactValid && vals.storeValid) {
+        const firstNameOk = !!(state.customerFirstName || '').trim();
+        if (vals.contactValid && vals.storeValid && firstNameOk) {
           const { quoteLines, parts } = buildQuoteLinesAndParts(vals);
           logQuoteToSheet(vals.contactMethod, vals.contactValue.trim(), vals.storeNameLabel, quoteLines, vals.logValue, buildPurchaseLink(vals), parts, 'Email Quote');
           setState({ sent: true, skippedContact: false });
@@ -874,11 +888,12 @@
         break;
       }
       case 'skipContact': {
+        // "Generate Purchase Link" — logs and reveals the link but stays on this panel
         const vals = computeVals();
         if (vals.storeValid && (state.repAgent || '').trim()) {
           const { quoteLines, parts } = buildQuoteLinesAndParts(vals);
           logQuoteToSheet('', '', vals.storeNameLabel, quoteLines, vals.logValue, buildPurchaseLink(vals), parts, 'Purchase Link Generated');
-          setState({ sent: true, skippedContact: true });
+          setState({ linkRevealOpen: true });
         }
         break;
       }
@@ -948,6 +963,11 @@
 
   el('emailInput').addEventListener('input', (e) => {
     state.contactValue = e.target.value;
+    updateContactDependent(computeVals());
+  });
+
+  el('firstNameInput').addEventListener('input', (e) => {
+    state.customerFirstName = e.target.value;
     updateContactDependent(computeVals());
   });
 

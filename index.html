@@ -457,29 +457,25 @@
 
             <!-- NOT SENT -->
             <div id="notSentPanel" style="display:flex;flex-direction:column;height:100%">
-              <span style="font-size:10px;font-weight:600;letter-spacing:.18em;color:#51dea2;text-transform:uppercase">Take it home</span>
-              <h2 style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:30px;line-height:1.03;color:#f1f5f3;margin:9px 0 0">Want your quote<br>emailed?</h2>
-              <p style="font-size:12.5px;color:#86948a;line-height:1.5;margin:9px 0 0">Your full quote: model, what's included, and pricing, straight to your inbox.</p>
-
-
-              <!-- tonal image -->
-              <img src="tonal-space.png" alt="Tonal wall-mounted footprint" style="margin-top:16px;width:100%;border-radius:14px;border:1px solid rgba(134,148,138,.2);display:block">
-              <span style="display:block;margin-top:8px;font-size:10.5px;color:#5d6a62;line-height:1.4">Wall-mounted footprint, about 7 ft × 7 ft of clear training space.</span>
+              <span style="font-size:10px;font-weight:600;letter-spacing:.18em;color:#51dea2;text-transform:uppercase">Close the deal</span>
+              <h2 style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:28px;line-height:1.05;color:#f1f5f3;margin:8px 0 0">What's the next step?</h2>
 
               <!-- recap -->
-              <div style="margin-top:16px;padding:4px 18px;border-radius:16px;background:rgba(23,28,31,.7);border:1px solid rgba(134,148,138,.16)">
-                <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid rgba(134,148,138,.14)">
+              <div style="margin-top:14px;padding:4px 18px;border-radius:16px;background:rgba(23,28,31,.7);border:1px solid rgba(134,148,138,.16)">
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid rgba(134,148,138,.14)">
                   <span style="font-size:11px;font-weight:700;letter-spacing:.12em;color:#86948a;text-transform:uppercase">Your <span id="recapTrainerName">Tonal 2</span> quote</span>
                   <span id="recapAllIn" style="font-family:'Big Shoulders Display',sans-serif;font-weight:800;font-size:22px;color:#51dea2">$0</span>
                 </div>
                 <div id="summaryListSend"></div>
               </div>
 
-              <!-- store -->
-              <div style="margin-top:16px">
-                <span style="display:block;font-size:10px;font-weight:700;letter-spacing:.14em;color:#86948a;text-transform:uppercase;margin-bottom:8px">Store</span>
-                <select id="storeSelect" style="width:100%;height:48px;padding:0 18px;border-radius:999px;background:rgba(255,255,255,.03);border:1px solid rgba(134,148,138,.2);color:#f1f5f3;font-size:14px;font-weight:600">
-                  <option value="">Select store</option>
+              <!-- required fields -->
+              <div style="margin-top:14px;padding:14px 16px;border-radius:16px;background:rgba(23,28,31,.7);border:1px solid rgba(134,148,138,.16)">
+                <span style="font-size:10px;font-weight:700;letter-spacing:.14em;color:#86948a;text-transform:uppercase">Required for all actions <span style="color:#51dea2">*</span></span>
+
+                <!-- store -->
+                <select id="storeSelect" style="margin-top:10px;width:100%;height:42px;padding:0 14px;border-radius:10px;background:rgba(255,255,255,.03);border:1px solid rgba(134,148,138,.2);color:#f1f5f3;font-size:13px;font-weight:600">
+                  <option value="">Store *</option>
                   <option value="tn-bv">Bellevue</option>
                   <option value="BostonSeaport">Boston Seaport</option>
                   <option value="tn-wnck">Broadway Plaza</option>
@@ -496,40 +492,61 @@
                   <option value="tn-utc">UTC</option>
                   <option value="tn-twc">Westchester</option>
                 </select>
-              </div>
-
-              <!-- checkout link attribution (saved to quote log) -->
-              <div style="margin-top:16px;padding:16px 18px;border-radius:16px;background:rgba(23,28,31,.7);border:1px solid rgba(134,148,138,.16)">
-                <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
-                  <span style="font-size:10px;font-weight:700;letter-spacing:.14em;color:#86948a;text-transform:uppercase">Checkout link</span>
-                  <span style="font-size:9.5px;color:#5d6a62">saved to quote log</span>
-                </div>
 
                 <!-- agent id -->
-                <div style="margin-top:12px;display:flex;align-items:center;gap:10px">
-                  <span style="font-size:11.5px;color:#bbcabf;white-space:nowrap">Your Agent ID</span>
-                  <input id="repAgentInput" inputmode="numeric" placeholder="e.g. 293" style="flex:1;min-width:0;height:38px;padding:0 12px;border-radius:10px;background:rgba(255,255,255,.03);border:1px solid rgba(134,148,138,.2);color:#f1f5f3;font-size:13px;font-weight:600;text-align:right">
-                </div>
+                <input id="repAgentInput" inputmode="numeric" placeholder="Agent ID *" style="margin-top:8px;width:100%;box-sizing:border-box;height:42px;padding:0 14px;border-radius:10px;background:rgba(255,255,255,.03);border:1px solid rgba(134,148,138,.2);color:#f1f5f3;font-size:13px;font-weight:600">
+                <span style="display:block;margin-top:8px;font-size:10px;color:#5d6a62;line-height:1.4">Agent ID saves on this device. Builds the tonal.com checkout link logged with every action.</span>
+              </div>
 
-                <span style="display:block;margin-top:10px;font-size:10px;color:#5d6a62;line-height:1.45">Agent ID saves on this device. A tonal.com checkout link is built from this quote (with your store &amp; Agent ID) and recorded in your quote log when you send.</span>
-
-                <!-- on-screen reveal -->
-                <button id="showLinkBtn" data-action="togglePurchaseLinkVisible" style="margin-top:12px;width:100%;height:36px;border-radius:10px;border:1px solid rgba(134,148,138,.3);background:rgba(255,255,255,.02);color:#bbcabf;font-weight:700;font-size:11.5px;letter-spacing:.02em;cursor:pointer">Show purchase link</button>
-                <div id="purchaseLinkReveal" style="display:none;margin-top:10px">
-                  <div id="purchaseLinkText" style="font-size:11px;color:#71fbbd;line-height:1.45;word-break:break-all;background:rgba(0,0,0,.25);border:1px solid rgba(81,222,162,.2);border-radius:10px;padding:10px 12px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace"></div>
-                  <button id="copyLinkBtn" data-action="copyPurchaseLink" style="margin-top:8px;width:100%;height:38px;border-radius:10px;border:none;background:#51dea2;color:#051512;font-weight:700;font-size:12.5px;letter-spacing:.02em;cursor:pointer">Copy link</button>
+              <!-- email quote fields -->
+              <div style="margin-top:10px;padding:14px 16px;border-radius:16px;background:rgba(23,28,31,.7);border:1px solid rgba(134,148,138,.16)">
+                <span style="font-size:10px;font-weight:700;letter-spacing:.14em;color:#86948a;text-transform:uppercase">Required for Email Quote <span style="color:#51dea2">*</span></span>
+                <input id="firstNameInput" placeholder="Customer first name *" style="margin-top:10px;width:100%;box-sizing:border-box;height:42px;padding:0 14px;border-radius:10px;background:rgba(255,255,255,.03);border:1px solid rgba(134,148,138,.2);color:#f1f5f3;font-size:13px">
+                <div id="emailWrap" style="margin-top:8px;display:flex;align-items:center;gap:0;border-radius:10px;background:rgba(255,255,255,.03);border:1px solid rgba(134,148,138,.2);overflow:hidden">
+                  <input id="emailInput" placeholder="Customer email *" inputmode="email" style="flex:1;min-width:0;background:transparent;border:none;padding:0 14px;height:42px;color:#f1f5f3;font-size:13px">
                 </div>
               </div>
 
-              <!-- contact input -->
-              <div id="emailWrap" style="margin-top:18px;display:flex;align-items:center;gap:10px;padding:6px 6px 6px 18px;border-radius:999px;background:rgba(255,255,255,.03);border:1px solid rgba(134,148,138,.2)">
-                <input id="emailInput" placeholder="Customer email" inputmode="email" style="flex:1;min-width:0;background:transparent;border:none;color:#f1f5f3;font-size:15px">
-                <button id="sendBtn" data-action="sendQuote" disabled style="flex:none;height:48px;padding:0 24px;border-radius:999px;border:none;background:#2b3a33;color:#051512;font-weight:700;font-size:14px;letter-spacing:.03em;opacity:.5">Email Quote</button>
-              </div>
-              <button id="skipBtn" data-action="skipContact" disabled style="margin-top:10px;align-self:flex-start;padding:0;background:transparent;border:none;color:#5d6a62;font-size:11.5px;font-weight:600;letter-spacing:.02em;cursor:pointer;text-decoration:underline;text-decoration-color:rgba(134,148,138,.35)">Skip — just log the purchase link</button>
+              <!-- three action buttons -->
+              <div style="margin-top:14px;display:flex;flex-direction:column;gap:9px">
 
-              <!-- buy now -->
-              <button id="buyNowBtn" data-action="buyNow" style="margin-top:14px;width:100%;height:52px;border-radius:999px;border:1px solid rgba(81,222,162,.4);background:transparent;color:#51dea2;font-weight:700;font-size:15px;letter-spacing:.03em;opacity:.4;cursor:default">Buy Now →</button>
+                <!-- generate purchase link -->
+                <button id="genLinkBtn" data-action="skipContact" disabled style="display:flex;align-items:center;gap:13px;width:100%;padding:14px 16px;border-radius:14px;border:1px solid rgba(134,148,138,.25);background:rgba(23,28,31,.6);cursor:default;text-align:left;transition:border-color .15s,background .15s">
+                  <span style="flex:none;width:36px;height:36px;border-radius:50%;background:rgba(134,148,138,.12);display:flex;align-items:center;justify-content:center;font-size:16px">🔗</span>
+                  <span style="flex:1;min-width:0">
+                    <span style="display:block;font-size:13.5px;font-weight:700;color:#86948a;letter-spacing:.01em">Generate Purchase Link</span>
+                    <span style="display:block;font-size:10.5px;color:#5d6a62;margin-top:2px">Logs the link — no email sent</span>
+                  </span>
+                  <span style="font-size:14px;color:#5d6a62">→</span>
+                </button>
+
+                <!-- buy now -->
+                <button id="buyNowBtn" data-action="buyNow" disabled style="display:flex;align-items:center;gap:13px;width:100%;padding:14px 16px;border-radius:14px;border:1px solid rgba(134,148,138,.25);background:rgba(23,28,31,.6);cursor:default;text-align:left;transition:border-color .15s,background .15s">
+                  <span style="flex:none;width:36px;height:36px;border-radius:50%;background:rgba(134,148,138,.12);display:flex;align-items:center;justify-content:center;font-size:16px">⚡</span>
+                  <span style="flex:1;min-width:0">
+                    <span style="display:block;font-size:13.5px;font-weight:700;color:#86948a;letter-spacing:.01em">Buy Now</span>
+                    <span style="display:block;font-size:10.5px;color:#5d6a62;margin-top:2px">Opens checkout & logs the link</span>
+                  </span>
+                  <span style="font-size:14px;color:#5d6a62">→</span>
+                </button>
+
+                <!-- email quote -->
+                <button id="sendBtn" data-action="sendQuote" disabled style="display:flex;align-items:center;gap:13px;width:100%;padding:14px 16px;border-radius:14px;border:1px solid rgba(134,148,138,.25);background:rgba(23,28,31,.6);cursor:default;text-align:left;transition:border-color .15s,background .15s">
+                  <span style="flex:none;width:36px;height:36px;border-radius:50%;background:rgba(134,148,138,.12);display:flex;align-items:center;justify-content:center;font-size:16px">✉️</span>
+                  <span style="flex:1;min-width:0">
+                    <span style="display:block;font-size:13.5px;font-weight:700;color:#86948a;letter-spacing:.01em">Email Quote</span>
+                    <span style="display:block;font-size:10.5px;color:#5d6a62;margin-top:2px">Sends quote to customer's inbox</span>
+                  </span>
+                  <span style="font-size:14px;color:#5d6a62">→</span>
+                </button>
+
+              </div>
+
+              <!-- purchase link reveal (hidden, populated after gen link) -->
+              <div id="purchaseLinkReveal" style="display:none;margin-top:12px">
+                <div id="purchaseLinkText" style="font-size:11px;color:#71fbbd;line-height:1.45;word-break:break-all;background:rgba(0,0,0,.25);border:1px solid rgba(81,222,162,.2);border-radius:10px;padding:10px 12px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace"></div>
+                <button id="copyLinkBtn" data-action="copyPurchaseLink" style="margin-top:8px;width:100%;height:36px;border-radius:10px;border:none;background:#51dea2;color:#051512;font-weight:700;font-size:12px;letter-spacing:.02em;cursor:pointer">Copy link</button>
+              </div>
 
               <button data-action="goCompare" style="margin-top:auto;align-self:flex-start;padding:12px 0;background:transparent;border:none;color:#86948a;font-size:12.5px;font-weight:600;letter-spacing:.04em">← Back to comparison</button>
             </div>
