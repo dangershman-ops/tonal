@@ -15,7 +15,7 @@
   // remove entries as needed. Leave the array empty to skip logging entirely.
   const SHEETS_WEBHOOK_URLS = [
     'https://script.google.com/macros/s/AKfycbzg5uDJ_HtuLQAO2gcgZpmYyuCJfDqBlxd_P4Wvo7L-cUmd1k7bdPwLsI97wFIuPrkspw/exec', // Sheet 1 (original)
-    'https://script.google.com/macros/s/AKfycbw9ZXb5AoA6lWrbxL3HFKwvaab7v61UICSylPOSUeL7ftjTl6VgS90uZpiufwMymyhD/exec', // Sheet 2 ("test" tab)
+    'https://script.google.com/macros/s/AKfycbzK9ELritBnILrm58tNrn55JpM__KckYrvp3jtUjqygda4bAMJRB1tsJ5J1sLHnwbBG/exec', // Sheet 2 ("test" tab)
   ];
 
   function logQuoteToSheet(contactMethod, contactValue, store, quoteLines, subtotalPreTax, purchaseLink, parts, actionType) {
