@@ -18,16 +18,14 @@
     'https://script.google.com/macros/s/AKfycbw9ZXb5AoA6lWrbxL3HFKwvaab7v61UICSylPOSUeL7ftjTl6VgS90uZpiufwMymyhD/exec', // Sheet 2 ("test" tab)
   ];
 
-  function logQuoteToSheet(contactMethod, contactValue, store, quoteLines, subtotalPreTax, purchaseLink, parts) {
+  function logQuoteToSheet(contactMethod, contactValue, store, quoteLines, subtotalPreTax, purchaseLink, parts, actionType) {
     const urls = SHEETS_WEBHOOK_URLS.filter((u) => u && !u.startsWith('PASTE_'));
     if (!urls.length) return;
-    // Base payload + each link component broken out into its own field (parts),
-    // mirroring the URL-generator columns (Agent ID / Trainer / Accessories /
-    // Warranty / Discount Applied) so each sheet can read or rebuild the link per column.
     const body = JSON.stringify(Object.assign({
       contactMethod, contactValue, store, quoteLines,
       subtotalPreTax, totalPrice: subtotalPreTax,
       purchaseLink: purchaseLink || '',
+      actionType: actionType || '',
       timestamp: new Date().toISOString(),
     }, parts || {}));
     urls.forEach((url) => {
@@ -833,8 +831,13 @@
       case 'goCompare': setState({ step: 1 }); break;
       case 'goSend': setState({ step: 2 }); break;
       case 'buyNow': {
-        const link = buildPurchaseLink(computeVals());
-        if (link) window.open(link, '_blank');
+        const vals = computeVals();
+        const link = buildPurchaseLink(vals);
+        if (link) {
+          const { quoteLines, parts } = buildQuoteLinesAndParts(vals);
+          logQuoteToSheet(vals.contactMethod, vals.contactValue.trim(), vals.storeNameLabel, quoteLines, vals.logValue, link, parts, 'Buy Now');
+          window.open(link, '_blank');
+        }
         break;
       }
       case 'switchTrainer': setState({ trainer: state.trainer === 'tonal2' ? 'tonal1' : 'tonal2' }); break;
@@ -865,7 +868,7 @@
         const vals = computeVals();
         if (vals.contactValid && vals.storeValid) {
           const { quoteLines, parts } = buildQuoteLinesAndParts(vals);
-          logQuoteToSheet(vals.contactMethod, vals.contactValue.trim(), vals.storeNameLabel, quoteLines, vals.logValue, buildPurchaseLink(vals), parts);
+          logQuoteToSheet(vals.contactMethod, vals.contactValue.trim(), vals.storeNameLabel, quoteLines, vals.logValue, buildPurchaseLink(vals), parts, 'Email Quote');
           setState({ sent: true, skippedContact: false });
         }
         break;
@@ -874,7 +877,7 @@
         const vals = computeVals();
         if (vals.storeValid && (state.repAgent || '').trim()) {
           const { quoteLines, parts } = buildQuoteLinesAndParts(vals);
-          logQuoteToSheet('', '', vals.storeNameLabel, quoteLines, vals.logValue, buildPurchaseLink(vals), parts);
+          logQuoteToSheet('', '', vals.storeNameLabel, quoteLines, vals.logValue, buildPurchaseLink(vals), parts, 'Purchase Link Generated');
           setState({ sent: true, skippedContact: true });
         }
         break;
