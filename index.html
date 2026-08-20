@@ -152,6 +152,23 @@
                   <span id="discountMaxLabel" style="font-size:10px;color:#5d6a62">30%</span>
                 </div>
                 <button id="discountFreeBtn" data-action="setDiscountFree" style="display:none;margin-top:10px;height:26px;padding:0 12px;border-radius:8px;border:1px solid rgba(134,148,138,.3);background:rgba(255,255,255,.02);color:#bbcabf;font-weight:700;font-size:10.5px;letter-spacing:.02em;cursor:pointer">Make free (100%)</button>
+
+                <!-- heroes discount (military, first responders, healthcare workers, teachers — Tonal 2 only) -->
+                <div id="heroDiscountRow" style="margin-top:16px;padding-top:14px;border-top:1px solid rgba(134,148,138,.14)">
+                  <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+                    <span style="font-size:11.5px;font-weight:700;color:#f1f5f3">Heroes Discount — $500 off</span>
+                    <button data-action="toggleHeroDiscount" id="heroDiscountToggleBtn" style="all:unset;cursor:pointer;position:relative;width:38px;height:22px;flex:none">
+                      <span id="heroDiscountTrack" style="position:absolute;inset:0;border-radius:11px;background:rgba(255,255,255,.14);transition:background .15s"></span>
+                      <span id="heroDiscountThumb" style="position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#f1f5f3;transition:left .15s"></span>
+                    </button>
+                  </div>
+                  <select id="heroDiscountCategorySelect" style="display:none;width:100%;height:38px;margin-top:10px;padding:0 12px;border-radius:10px;background:rgba(255,255,255,.03);border:1px solid rgba(134,148,138,.2);color:#f1f5f3;font-size:13px;font-weight:600">
+                    <option value="Military">Military</option>
+                    <option value="First Responder">First Responder</option>
+                    <option value="Healthcare Worker">Healthcare Worker</option>
+                    <option value="Teacher">Teacher</option>
+                  </select>
+                </div>
               </div>
             </div>
 
@@ -430,8 +447,7 @@
             <!-- nav -->
             <div style="display:flex;gap:12px;margin-top:16px;flex:none">
               <button data-action="goPrice" style="flex:none;width:52px;height:56px;border-radius:999px;border:1px solid rgba(134,148,138,.24);background:transparent;color:#bbcabf;font-size:20px">←</button>
-              <button id="buyNowBtn" data-action="buyNow" style="flex:none;height:56px;padding:0 22px;border-radius:999px;border:1px solid rgba(81,222,162,.4);background:transparent;color:#51dea2;font-weight:700;font-size:14px;letter-spacing:.03em;opacity:.4;cursor:default">Buy Now</button>
-              <button data-action="goSend" style="flex:1;height:56px;border-radius:999px;border:none;background:#51dea2;color:#051512;font-weight:700;font-size:14px;letter-spacing:.03em;display:flex;align-items:center;justify-content:center;gap:9px">Email Quote <span style="font-size:16px">→</span></button>
+              <button data-action="goSend" style="flex:1;height:56px;border-radius:999px;border:none;background:#51dea2;color:#051512;font-weight:700;font-size:14px;letter-spacing:.03em;display:flex;align-items:center;justify-content:center;gap:9px">Next <span style="font-size:16px">→</span></button>
             </div>
 
           </section>
@@ -508,9 +524,12 @@
               <!-- contact input -->
               <div id="emailWrap" style="margin-top:18px;display:flex;align-items:center;gap:10px;padding:6px 6px 6px 18px;border-radius:999px;background:rgba(255,255,255,.03);border:1px solid rgba(134,148,138,.2)">
                 <input id="emailInput" placeholder="Customer email" inputmode="email" style="flex:1;min-width:0;background:transparent;border:none;color:#f1f5f3;font-size:15px">
-                <button id="sendBtn" data-action="sendQuote" disabled style="flex:none;height:48px;padding:0 24px;border-radius:999px;border:none;background:#2b3a33;color:#051512;font-weight:700;font-size:14px;letter-spacing:.03em;opacity:.5">Send</button>
+                <button id="sendBtn" data-action="sendQuote" disabled style="flex:none;height:48px;padding:0 24px;border-radius:999px;border:none;background:#2b3a33;color:#051512;font-weight:700;font-size:14px;letter-spacing:.03em;opacity:.5">Email Quote</button>
               </div>
               <button id="skipBtn" data-action="skipContact" disabled style="margin-top:10px;align-self:flex-start;padding:0;background:transparent;border:none;color:#5d6a62;font-size:11.5px;font-weight:600;letter-spacing:.02em;cursor:pointer;text-decoration:underline;text-decoration-color:rgba(134,148,138,.35)">Skip — just log the purchase link</button>
+
+              <!-- buy now -->
+              <button id="buyNowBtn" data-action="buyNow" style="margin-top:14px;width:100%;height:52px;border-radius:999px;border:1px solid rgba(81,222,162,.4);background:transparent;color:#51dea2;font-weight:700;font-size:15px;letter-spacing:.03em;opacity:.4;cursor:default">Buy Now →</button>
 
               <button data-action="goCompare" style="margin-top:auto;align-self:flex-start;padding:12px 0;background:transparent;border:none;color:#86948a;font-size:12.5px;font-weight:600;letter-spacing:.04em">← Back to comparison</button>
             </div>

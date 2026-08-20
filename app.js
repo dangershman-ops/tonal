@@ -161,7 +161,9 @@
       trainer: vals.isTonal2 ? 'Tonal 2' : 'Tonal 1 - Certified Refurbished',
       accessories: vals.isRent ? '' : ((BUNDLES.find((b) => b.key === state.bundle) || {}).name || ''),
       warranty: vals.isRent ? '' : ((WARRANTY.find((w) => w.key === state.warranty) || {}).name || ''),
-      discountApplied: (!vals.isRent && vals.discountDescription) ? vals.discountDescription : '',
+      discountApplied: (!vals.isRent && (vals.discountDescription || vals.heroDiscountDescription))
+        ? [vals.discountDescription, vals.heroDiscountDescription].filter(Boolean).join(' + ')
+        : '',
     };
     return { quoteLines, parts };
   }
@@ -187,6 +189,7 @@
   const HOME_GYM_HIGH = 25000; // top of $7K-$25K range, RitFit
   const AVG_SALES_TAX_PCT = 5.09; // simple average of state-only rates, all 50 states + DC, Tax Foundation Jan 2026 data
   const TS_WASTE_MINUTES_PER_SESSION = 7.5; // avg setup/wait time added per gym session
+  const HERO_DISCOUNT_AMOUNT = 500; // fixed hero discount, Tonal 2 only
   const INFO_PAGE_IDS = ['accessoriesPage', 'warrantyPage', 'installationPage', 'membershipPage'];
 
   // State-only sales tax rate by state, Tax Foundation Jan 2026 data
@@ -256,6 +259,8 @@
     taxPct: AVG_SALES_TAX_PCT,
     discountMode: 'pct',
     discountPct: 0,
+    heroDiscountApplied: false,
+    heroDiscountCategory: 'Military',
     discountDollar: 0,
     discountOpen: false,
     discountTarget: 'trainer',   // 'trainer' | 'bundle' — which line item the discount applies to
@@ -320,7 +325,10 @@
     const discountAmount = !isTonal2 ? 0 : (discountMode === 'dollar'
       ? Math.min(discountDollar, discountTargetPrice)
       : discountTargetPrice * (discountPct / 100));
-    const trainerAfterDiscount = trainerPrice - (discountTarget === 'trainer' ? discountAmount : 0);
+    const heroDiscountAmount = (isTonal2 && s.heroDiscountApplied) ? HERO_DISCOUNT_AMOUNT : 0;
+    const heroDiscountLabel = 'Heroes Discount (' + s.heroDiscountCategory + ')';
+    const heroDiscountDescription = heroDiscountAmount > 0 ? (heroDiscountLabel + ': -' + fmt(heroDiscountAmount)) : '';
+    const trainerAfterDiscount = trainerPrice - (discountTarget === 'trainer' ? discountAmount : 0) - heroDiscountAmount;
     const bundleAfterDiscount = bundlePrice - (discountTarget === 'bundle' ? discountAmount : 0);
     const subtotal = trainerAfterDiscount + bundleAfterDiscount + shippingCost + warrantyPrice;
     const subtotalNoShipping = trainerAfterDiscount + bundleAfterDiscount + warrantyPrice;
@@ -339,6 +347,9 @@
     ];
     if (discountAmount > 0 && discountTarget === 'trainer') {
       summary.push({ label: discLabel, value: '-' + fmt(discountAmount) });
+    }
+    if (heroDiscountAmount > 0) {
+      summary.push({ label: heroDiscountLabel, value: '-' + fmt(heroDiscountAmount) });
     }
     summary.push({ label: bundleObj.name, value: fmt(bundlePrice) });
     if (discountAmount > 0 && discountTarget === 'bundle') {
@@ -445,6 +456,10 @@
       subtotalLabel: fmt(subtotal),
       subtotalNoShipDiscount,
       discountDescription,
+      heroDiscountAmount,
+      heroDiscountDescription,
+      heroDiscountApplied: s.heroDiscountApplied,
+      heroDiscountCategory: s.heroDiscountCategory,
       isRent,
       sendSummary,
       recapValue,
@@ -673,6 +688,11 @@
     if (document.activeElement !== el('taxPctInput')) el('taxPctInput').value = vals.taxPctLabel;
     el('taxStateSelect').value = state.taxState;
     syncDiscountModeUI(vals);
+    el('heroDiscountRow').style.display = vals.isTonal2 ? 'block' : 'none';
+    el('heroDiscountTrack').style.background = vals.heroDiscountApplied ? '#26bf86' : 'rgba(255,255,255,.14)';
+    el('heroDiscountThumb').style.left = vals.heroDiscountApplied ? '21px' : '3px';
+    el('heroDiscountCategorySelect').style.display = vals.heroDiscountApplied ? 'block' : 'none';
+    el('heroDiscountCategorySelect').value = vals.heroDiscountCategory;
     const discountDisplayValue = vals.discountMode === 'dollar' ? vals.discountDollar : vals.discountPct;
     if (document.activeElement !== el('discountValueInput')) el('discountValueInput').value = discountDisplayValue;
     if (document.activeElement !== el('discountRange')) el('discountRange').value = discountDisplayValue;
@@ -833,6 +853,7 @@
       case 'setHomeGymTab': setState({ compareTab: 'homeGym' }); break;
       case 'setTimeSavingsTab': setState({ compareTab: 'timeSavings' }); break;
       case 'toggleTsWaste': setState({ tsWasteEnabled: !state.tsWasteEnabled }); break;
+      case 'toggleHeroDiscount': setState({ heroDiscountApplied: !state.heroDiscountApplied }); break;
       case 'openInfoPage':
         INFO_PAGE_IDS.forEach((id) => { el(id).style.display = 'none'; });
         el(value + 'Page').style.display = 'block';
@@ -958,6 +979,10 @@
 
   el('tsDriveRange').addEventListener('input', (e) => {
     setState({ tsDriveMinutes: parseInt(e.target.value, 10) });
+  });
+
+  el('heroDiscountCategorySelect').addEventListener('change', (e) => {
+    setState({ heroDiscountCategory: e.target.value });
   });
 
   // populate the membership member-vs-non-member comparison once
