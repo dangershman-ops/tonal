@@ -417,12 +417,12 @@
     const rentInfo = RENT[s.trainer];
 
     // ---- compare: rent vs personal training (2x/week) ----
-    const rentMo = rentInfo.promo;
+    const rentMo = rentInfo.regular;
     const rentTrainerMo = SESS_RATE * 8 * N;
     const rentVsTrainerMax = Math.max(rentMo, rentTrainerMo);
     const rentBarPct = (v) => Math.max(7, Math.round((v / rentVsTrainerMax) * 100));
     const rentCompareColumns = [
-      { label: 'Rent ' + trainerName, sub: 'First 3 months · membership included', note: '', valueLabel: fmt(rentMo) + '/mo', valColor: '#51dea2', barPct: rentBarPct(rentMo), barBg: 'linear-gradient(180deg,#71fbbd,#26bf86)', barGlow: '0 0 28px rgba(81,222,162,.4)' },
+      { label: 'Rent ' + trainerName, sub: 'Membership included', note: '', valueLabel: fmt(rentMo) + '/mo', valColor: '#51dea2', barPct: rentBarPct(rentMo), barBg: 'linear-gradient(180deg,#71fbbd,#26bf86)', barGlow: '0 0 28px rgba(81,222,162,.4)' },
       { label: 'Personal Trainer', sub: '$65/hr · 2x/week', note: 'according to NESTA certified', valueLabel: fmt(rentTrainerMo) + '/mo', valColor: '#e88a8e', barPct: rentBarPct(rentTrainerMo), barBg: 'linear-gradient(180deg,#c54e53,#7e2f33)', barGlow: 'none' },
     ];
     const rentTrainerDiff = rentTrainerMo - rentMo;
@@ -451,6 +451,7 @@
       trainerName,
       isTonal2,
       isTonal1: !isTonal2,
+      allIn,
       allInLabel: fmt(allIn),
       subtotal,
       subtotalLabel: fmt(subtotal),
@@ -669,6 +670,7 @@
     // ---- price screen: buy flow ----
     el('switchLabel').textContent = vals.switchLabel;
     el('allInHero').textContent = vals.allInLabel;
+    el('monthlyRate').textContent = '$' + Math.ceil(vals.allIn / 36);
     renderBundleList(vals);
     renderShippingList();
     renderWarrantyList('warrantyListAlways');
@@ -749,7 +751,7 @@
 
     // ---- compare screen: rent view ----
     el('rentCompareTrainerName').textContent = vals.trainerName;
-    el('rentCompareMoLabel').textContent = fmt(vals.rentInfo.promo);
+    el('rentCompareMoLabel').textContent = fmt(vals.rentInfo.regular);
     renderColumns('rentCompareColumns', vals.rentCompareColumns);
     const rentCallout = el('rentSavesCallout');
     rentCallout.style.background = vals.rentSavesCalloutBg;
@@ -819,6 +821,7 @@
     if (document.activeElement !== el('discountValueInput')) el('discountValueInput').value = discountDisplayValue;
     if (document.activeElement !== el('discountRange')) el('discountRange').value = discountDisplayValue;
     el('allInHero').textContent = vals.allInLabel;
+    el('monthlyRate').textContent = '$' + Math.ceil(vals.allIn / 36);
     el('allInTotalPrice').textContent = vals.allInLabel;
     renderSummaryRows('summaryListPrice', vals.summary);
     renderSendSummaryRows('summaryListSend', vals.sendSummary);
