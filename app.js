@@ -699,7 +699,7 @@
     el('allInTotalPrice').textContent = vals.allInLabel;
     el('tonal1Compare').style.display = vals.isTonal1 ? 'block' : 'none';
     const financingLink = document.getElementById('financingLink');
-    if (financingLink) financingLink.href = 'financing.html?amount=' + Math.round(vals.subtotal);
+    if (financingLink) financingLink.href = 'financing.html?amount=' + Math.round(vals.allIn);
 
     // ---- compare screen: buy vs rent view ----
     el('compareBuyView').style.display = vals.purchaseMode === 'rent' ? 'none' : 'flex';
