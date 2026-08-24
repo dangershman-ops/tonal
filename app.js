@@ -73,21 +73,18 @@
 
   // Store name + SFDC location code (from the roster LOGIC sheet).
   const STORE_LOCATIONS = [
-    { name: 'Bellevue', code: 'tn-bv' },
-    { name: 'Boston Seaport', code: 'BostonSeaport' },
-    { name: 'Broadway Plaza', code: 'tn-wnck' },
-    { name: 'Century City', code: 'tn-cc' },
-    { name: 'Cherry Creek', code: 'tn-chck' },
-    { name: 'Fashion Square', code: 'tn-fsq' },
-    { name: 'King of Prussia', code: 'tn-kop' },
     { name: 'Natick', code: 'tn-ntck' },
-    { name: 'Northpark', code: 'tn-npsr' },
-    { name: 'Old Orchard', code: 'tn-oo' },
-    { name: 'Perimeter', code: 'tn-pmtr' },
+    { name: 'Broadway', code: 'tn-wnck' },
+    { name: 'Bellevue', code: 'tn-bv' },
     { name: 'Short Hills', code: 'tn-sh' },
-    { name: "Tyson's Corner", code: 'tn-tc' },
+    { name: 'Perimeter Mall', code: 'tn-pmtr' },
+    { name: 'Old Orchard', code: 'tn-oo' },
     { name: 'UTC', code: 'tn-utc' },
+    { name: 'Century City', code: 'tn-cc' },
+    { name: 'NorthPark', code: 'tn-npsr' },
+    { name: "Tyson's Corner", code: 'tn-tc' },
     { name: 'Westchester', code: 'tn-twc' },
+    { name: 'Fashion Square', code: 'tn-fsq' },
   ];
   const storeName = (code) => (STORE_LOCATIONS.find((l) => l.code === code) || {}).name || '';
 
